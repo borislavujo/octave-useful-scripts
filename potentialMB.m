@@ -11,9 +11,10 @@ vEne = zeros(m,1); % array initiation
 Grad = zeros(m,2);
 % loop over all 4 contributions
 for i=1:4
-  XX = X(:,1)-x0(i); % auxiliary variable
+  XX = X(:,1)-x0(i); % auxiliary variables
   YY = X(:,2)-y0(i);
-  vEne = vEne + A(i)*exp(a(i)*XX.*XX + b(i)*XX.*YY + c(i)*YY.*YY); % energy
-  Grad(:,1) = Grad(:,1) + A(i)*(2*a(i)*XX+b(i)*YY).*exp(a(i)*XX.*XX + b(i)*XX.*YY + c(i)*YY.*YY); 
-  Grad(:,2) = Grad(:,2) + A(i)*(b(i)*XX+2*c(i)*YY).*exp(a(i)*XX.*XX + b(i)*XX.*YY + c(i)*YY.*YY);
+  expTerm = A(i)*exp(a(i)*XX.*XX + b(i)*XX.*YY + c(i)*YY.*YY);
+  vEne = vEne + expTerm; % energy
+  Grad(:,1) = Grad(:,1) + (2*a(i)*XX+b(i)*YY).*expTerm; % x component of gradient
+  Grad(:,2) = Grad(:,2) + (b(i)*XX+2*c(i)*YY).*expTerm; % y component of gradient
 endfor
