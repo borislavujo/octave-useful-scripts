@@ -6,7 +6,7 @@ function [RotMat, dist] = qtrn3D(X,Y)
 % checking the input
 [my,ny] = size(Y);
 if (n~=3 || ny~=3)  printf("method is only for vectors in 2 dimensions");  return; 
-elseif (my~=m) orubtf("mismatched number of atoms");  return; endif
+elseif (my~=m) printf("mismatched number of atoms");  return; endif
 
 % S is a 3x3 matrix
 S = Y'*X;
