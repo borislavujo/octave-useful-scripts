@@ -15,8 +15,8 @@ if (gamma == 0) b = 1; else b = sqrt(tanh(gamma*dt/2)/(gamma*dt/2)); endif % lim
 
 % OVRVO integrator, equations 7a-g in arXiv 1301.3800
 Xt = sqrt(a)*Xt + sqrt(1-a)*normrnd(0,1,size(X,1),2)./sqrt(beta*repmat(vm,1,k)); % 7a 
-[vEne,Xttm] = potential(X); % 7b calculation of energy and energy gradient
-Xt = Xt - (dt/2)*b*Xttm./repmat(vm,1,k); % acceleration = - energy gradient / mass
+[vEne,Xttm] = potential(X); % calculation of energy and energy gradient
+Xt = Xt - (dt/2)*b*Xttm./repmat(vm,1,k); % 7b (acceleration = - energy gradient / mass)
 X = X + (dt/2)*b*Xt; % 7c
 [vEne,Xttm] = potential(X); % 7d evaluate gradient at midpoint
 X = X + (dt/2)*b*Xt; % 7e
