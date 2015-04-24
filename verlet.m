@@ -1,4 +1,4 @@
-function [X, Xt] = verlet(X, Xt, dt, vm, Grad)
+function [X, Xt, Grad] = verlet(X, Xt, dt, vm, Grad)
 % Velocity Verlet algorithm, propagates positions (X) and velocities (Xt) by time dt
 [nAt,nDim] = size(X); [nat,ndim] = size(Xt);
 if (nat~=nAt | ndim~=nDim) error('dimensions of X and Xt disagree'); endif % check dimensions
@@ -10,4 +10,3 @@ Xt = Xt - 0.5*dt*Grad./repmat(vm,1,nDim); % 1. update velocities
 X = X + dt*Xt; % 2. update positions
 [ene, Grad] = potential(X); % 3. calculate gradient
 Xt = Xt - 0.5*dt*Grad./repmat(vm,1,nDim); % 4. update velocities
-
