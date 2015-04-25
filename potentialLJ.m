@@ -15,7 +15,7 @@ R12recip = ones(nAt)./(R12 + eye(nAt)) - eye(nAt);
 R6recip = ones(nAt)./(R6term + eye(nAt)) - eye(nAt);
 Forces = -24*(2*R6recip - ones(nAt)).*R6recip.*R12recip;
 Forcex = Orientx .* Forces; Forcey = Orienty .* Forces; Forcez = Orientz .* Forces;
-vfx = - Forcex * ones(nAt,1); vfy = - Forcey * ones(nAt,1); vfz = - Forcez * ones(nAt,1);
+vfx = Forcex * ones(nAt,1); vfy = Forcey * ones(nAt,1); vfz = Forcez * ones(nAt,1);
 if (nDim==1) Grad = vfx;
 elseif (nDim==2) Grad = [vfx,vfy];
 else Grad = [vfx, vfy, vfz]; endif
