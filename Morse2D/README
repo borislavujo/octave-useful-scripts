@@ -1,0 +1,2 @@
+a script that finds the cell index for a 2D Morse6 cluster
+it takes on average 1.6 ms to find the right cell on my Mac Air 2013
