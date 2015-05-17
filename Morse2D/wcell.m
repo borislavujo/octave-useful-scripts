@@ -21,7 +21,7 @@ if (nBonds==9)
     else
       cellInd = 4;
     endif
-  else cellInd = 39;
+  else cellInd = 40;
   endif
 % 8-bond clusters
 elseif (nBonds==8)
@@ -30,7 +30,7 @@ elseif (nBonds==8)
       cellInd = 13;
     elseif prod(v==[5,3,3,2,2,1])
       cellInd = 12;
-    else cellInd = 38;
+    else cellInd = 39;
     endif
   elseif (v(1)==4)
     if prod(v==[4,4,3,2,2,1])
@@ -55,20 +55,22 @@ elseif (nBonds==8)
       else
 	cellInd = 11;
       endif
-    else cellInd = 38;
+    else cellInd = 39;
     endif
   elseif prod(v==[3,3,3,3,2,2])
     cellInd = 15;
-  else cellInd = 38;
+  else cellInd = 39;
   endif
 % 7-bond clusters
 elseif (nBonds==7)
-  if (v(1)==5)
+  if (v(6)==0)
+    cellInd = 36;
+  elseif (v(1)==5)
     if prod(v==[5,3,2,2,1,1])
       cellInd = 33;
     elseif prod(v==[5,2,2,2,2,1])
       cellInd = 34;
-    else cellInd = 37;
+    else cellInd = 38;
     endif
   elseif (v(1)==4)
     if prod(v==[4,3,2,2,2,1])
@@ -97,7 +99,7 @@ elseif (nBonds==7)
       cellInd = 29;
     elseif prod(v==[4,2,2,2,2,2])
       cellInd = 32;
-    else cellInd = 37;
+    else cellInd = 38;
     endif
   elseif (v(1)==3)
     if prod(v==[3,3,3,3,1,1])
@@ -119,13 +121,13 @@ elseif (nBonds==7)
 	cellInd = 25;
       else cellInd = 35;
       endif
-    else cellInd = 37;
+    else cellInd = 38;
     endif
-  else cellInd = 37;
+  else cellInd = 38;
   endif
-% 6- and fewer bonds -> state 36
+% 6- and fewer bonds -> state 37
 else
-  cellInd = 36;
+  cellInd = 37;
 endif
 
 endfunction
@@ -342,4 +344,3 @@ else
   yesorno = 0;
 endif
 endfunction
-%
