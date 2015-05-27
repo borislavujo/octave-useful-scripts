@@ -183,7 +183,7 @@ v = sum(C,2);
 vi1 = find(v==1);
 i11 = vi1(1);
 itest = find(C(:,i11));
-if (v(itest)==3) i12 = vi1(2); else i12 = vi1(1); i11 = vi2(2); endif
+if (v(itest)==3) i12 = vi1(2); else i12 = vi1(1); i11 = vi1(2); endif
 vc = cross([X(i11,:),0],[X(i12,:),0]);
 if (vc(3)<0) yesorno = 1; else yesorno = 0; endif
 endfunction
