@@ -20,21 +20,22 @@ Xt = repmat(sqrt(va),1,k).*Xt + repmat(sqrt(ones(n,1)-va),1,k).*normrnd(0,1,n,k)
 [epot,Xttm] = potentialMorse(X); % calculation of energy and energy gradient
 if (epot<epot0)
   epotb = (epot0-epot).^2./(alpha+epot0-epot);
-  Xttm = Xttm * alpha^2/(alpha + epot0 - epot)^2;
+  dtScaled = exp(beta*epotb)*dt/2;
+  Xttm = Xttm * (1 + (epot0-epot)^2/(alpha+epot0-epot)^2 + 2*(epot0-epot)/(alpha+epot0-epot));
 else
-  epotb = 0;
+  dtScaled = dt;
 endif
-dtScaled = exp(beta*epotb)*dt/2;
 Xt = Xt - ((dt/2)*repmat(vb,1,k).*Xttm./repmat(vm,1,k)); % 7b (acceleration = - energy gradient / mass)
 X = X + (dt/2)*repmat(vb,1,k).*Xt; % 7c
 [epot,Xttm] = potentialMorse(X); % 7d evaluate gradient at midpoint
 if (epot<epot0)
   epotb = (epot0-epot).^2./(alpha+epot0-epot);
-  Xttm = Xttm * alpha^2/(alpha + epot0 - epot)^2;
+  dtScaled = dtScaled + exp(beta*epotb)*dt/2;
+  Xttm = Xttm * (1 + (epot0-epot)^2/(alpha+epot0-epot)^2 + 2*(epot0-epot)/(alpha+epot0-epot));
 else
   epotb = 0;
+  dtScaled = dtScaled + dt;
 endif
-dtScaled = dtScaled + exp(beta*epotb)*dt/2;
 X = X + ((dt/2)*repmat(vb,1,k).*Xt); % 7e
 Xt = Xt - ((dt/2)*repmat(vb,1,k).*Xttm./repmat(vm,1,k)); % 7f
 Xt = repmat(sqrt(va),1,k).*Xt + sqrt(repmat(ones(n,1)-va,1,k)).*normrnd(0,1,n,k)./sqrt(beta*repmat(vm,1,k)); % 7g
