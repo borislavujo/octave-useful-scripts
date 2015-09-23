@@ -1,4 +1,4 @@
-function [R,vi] = regroupfreesparse(R,vp,thresh,nDesiredStates)
+function [R,vi] = regroupfree(R,vp,thresh,nDesiredStates)
   if (nargin<4) nDesiredStates = 0; endif
   n = size(R,1); nStates = n;
   vi = [1:n]'; % index vector, always of size n
