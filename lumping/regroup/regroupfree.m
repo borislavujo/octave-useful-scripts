@@ -1,18 +1,17 @@
 function [R,vi] = regroupfree(R,vp,thresh,nDesiredStates)
-  if (nargin<4) nDesiredStates = 0; endif
-  n = size(R,1); nStates = n;
+% grouping minima stops when either a rate constant threshold or a number of states is reached
+  if (nargin<4) nDesiredStates = 0; endif 
+  n = size(R,1); nStates = n; % the original number of states
   vi = [1:n]'; % index vector, always of size n
-  R = R - diag(diag(R)); % delete all negative terms
-  [vmax,vrowi] = max(min(R,R')); % find the largest smaller rate constant
-  [kmax,icol] = max(vmax);
+  R = R - diag(diag(R)); % delete all diagonal (negative) terms
+  [vmax,vrowi] = max(min(R,R')); [kmax,icol] = max(vmax); % find the largest smaller rate constant
   while and(kmax>thresh,nStates>nDesiredStates)
     [R,vp,vi] = groupStates(R,vi,vp,vrowi(icol),icol); % both vp and R are updated
-    [vmax,vrowi] = max(min(R,R'));
-    [kmax,icol] = max(vmax);
-    know = full(kmax) % just to see the progress
-    nStates = size(R,1) % just to see the progress
+    [vmax,vrowi] = max(min(R,R')); [kmax,icol] = max(vmax); % find the largest smaller rate constant
+    know = full(kmax) % print progress
+    nStates = size(R,1) % print progress
   endwhile
-  R = R - diag(sum(R)); % regrouped rate matrix -> diagonal terms
+  R = R - diag(sum(R)); % regrouped rate matrix -> add diagonal terms
 endfunction
 
 function [R,vp,vi] = groupStates(R,vi,vp,is1,is2)
