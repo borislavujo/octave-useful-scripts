@@ -20,7 +20,7 @@ function [R,vp,vi] = groupStates(R,vi,vp,is1,is2)
   vnei = unique([find(R(is1,:)),find(R(is2,:))]); % find all the neighbours of s1 and s2
   p1 = vp(is1); p2 = vp(is2); % populations of s1 and s2
   for j=vnei
-    R(is1,j) = (p1*R(j,is1)+p2*R(j,is2))/(p1+p2); % rate from a grouped state to a neighbour
+    R(is1,j) = (p1*R(is1,j)+p2*R(is2,j))/(p1+p2); % rate from a grouped state to a neighbour
     R(j,is1) = R(j,is1) + R(j,is2); % rate from a neighbour to a grouped state
   endfor
   vp(is1) = p1+p2; % grouped population
