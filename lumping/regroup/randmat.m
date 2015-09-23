@@ -1,0 +1,9 @@
+function [K, vp] = randmat(n,fullness)
+if (nargin<2) fullness=min(2,sqrt(n))/sqrt(n); endif
+K = exp(5*rand(n));
+K = K.*(tril(rand(n))>(1-fullness));
+K = K+K';
+vp = exp(5*rand(n,1));
+vp = vp / sum(vp);
+K = diag(vp)*K;
+K = K - diag(sum(K));
