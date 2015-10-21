@@ -1,4 +1,4 @@
-function [vNeighbours, IndNeighbours, Proportions] = rmat2kmc(K)
+function [vNeighbours, IndNeighbours, Proportions, vRates] = rmat2kmc(K)
 % makes matrices useful for KMC from a rate matrix
 n = size(K,1);
 vNeighbours = zeros(n,1);
@@ -17,3 +17,4 @@ for i=1:n
     Proportions(j,i) = s/scale;
   end
 end
+vRates = sum(K);
