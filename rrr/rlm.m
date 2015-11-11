@@ -1,4 +1,4 @@
-function [Kl, vpl] = rlm3(n,m1,m2)
+function [Kl, vpl] = rlm(n,m1,m2)
 % returns nxn log rate matrix, diagonal is 0
 if (nargin<3) m2 = 20; endif % magnitude of the equil pop distribution
 if (nargin<2) m1 = 20; endif % magnitude of the rxn time distribution
