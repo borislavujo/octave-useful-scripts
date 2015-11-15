@@ -12,7 +12,7 @@ function [vi,FEl,SSl,TSTl,NFl] = rrr(Kl,vpl,nDesiredStates,vObserv)
   if (nDesiredStates<nObserv) nDesiredStates = nObserv; endif % number of states at the end is at least the number of observables
   vi = [1:n]'; % index vector, always of size n
   Kl = Kl - diag(diag(Kl)); % delete all diagonal (negative) terms; Kl is now the decision matrix
-  Kl = Kl -1e9*eye(n); % fill the diagonal, so it does not interfere with the searches for the largest rate constant
+  Kl = Kl -1e19*eye(n); % fill the diagonal, so it does not interfere with the searches for the largest rate constant
   SSl = Kl; % steady state matrix = the lower bound
   FEl = Kl; % fast equilibrium BC - the best upper bound
   NFl = Kl; % no-flux BC - should be between SSl and FEl
