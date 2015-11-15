@@ -21,14 +21,17 @@ function [vi,FEl,SSl,TSTl,NFl] = rrr(Kl,vpl,nDesiredStates,vObserv)
   if (nObserv>1)
     for i1Obs = 1:nObserv-1
       for i2Obs = i1Obs+1:nObserv
-	vObs1 = find(vObserv==vObsInd(i1Obs));
-	vObs2 = find(vObserv==vObsInd(i2Obs));
-	Kl12 = Kl(vObs1,vObs2);
-	Kl12 = Kl12 - (abs(Kl12)>0)*1e9; % decreasing all rate consts between different groups by exp(10^9)
-	Kl(vObs1,vObs2) = Kl12;
-	Kl21 = Kl(vObs2,vObs1);
-	Kl21 = Kl21 - (abs(Kl21)>0)*1e9; % decreasing all rate consts between different groups by exp(10^9)
-	Kl(vObs2,vObs1) = Kl21;
+	vObs1 = find(vObserv==vObsInd(i1Obs))';
+	vObs2 = find(vObserv==vObsInd(i2Obs))';
+	for i1 = vObs1
+	  for i2 = vObs2
+	    if (Kl(i1,i2)~=0)
+	      showi12 = [i1,i2]
+	      Kl(i1,i2) -= 1e9;
+	      Kl(i2,i1) -= 1e9;
+	    endif
+	  endfor
+	endfor
       endfor
     endfor
   endif
@@ -51,14 +54,16 @@ function [Kln,vpl,vi] = groupStates(Kl,vi,vpl,is1,is2,kType)
   R12 = Kl(is1,is2); R21 = Kl(is2,is1);
   Kln = Kl; % new matrix is created, so that the gradual modifications do not affect
   Kl(is1,is2) = 0; Kl(is2,is1) = 0; Kl(is1,is1) = 0; Kl(is2,is2) = 0; % delete rates between s1 and s2, so they do not appear among neighbours
-  Kl(is1,find(Kl(is1,:)<-1e5))=0; Kl(is2,find(Kl(is2,:)<-1e5))=0; Kl(find(Kl(:,is1)<-1e5),is1)=0; Kl(find(Kl(:,is2)<-1e5),is1)=0; % discard too small rates
+%  Kl(is1,find(Kl(is1,:)<-1e5))=0; Kl(is2,find(Kl(is2,:)<-1e5))=0; Kl(find(Kl(:,is1)<-1e5),is1)=0; Kl(find(Kl(:,is2)<-1e5),is1)=0; % discard too small rates
   vnei = unique([find(Kl(is1,:)),find(Kl(is2,:))]); % find all the neighbours of s1 and s2
-  nj = size(vnei,1);
+  nj = size(vnei,2)
   if (nj>0)
     for j=vnei
       vpj = [vpl(is1);vpl(is2);vpl(j)]; vpj = vpj - logSumExp(vpj); % vector of 3 eq. popul.
       Kij = [0,R12,Kl(is1,j);R21,0,Kl(is2,j);Kl(j,is1),Kl(j,is2),0]; % 3x3 log rate matrix
-      if (prod(kType=="fe")==1)
+      if (max(max(Kij))-min(min(Kij))>1e3)
+	[kab,kba] = tstlog(Kij,vpj);
+      elseif (prod(kType=="fe")==1)
 	vKl1 = Kl(:,is1); vKl1(is2) = 0; vKl1(j) = 0; vKl1 = full(vKl1(find(vKl1))); kADl = logSumExp(vKl1); % adding the equilibration through the neighbours
 	vKl2 = Kl(:,is2); vKl2(is1) = 0; vKl2(j) = 0; vKl2 = full(vKl2(find(vKl2))); kBDl = logSumExp(vKl2);
 	sumflux = logSumExp([vpl(1)+kADl;vpl(2)+kBDl]); 
