@@ -1,5 +1,6 @@
 function [kabl, kbal] = sslog(Kl, vpl)
 % rate constnt from the steady state approximation
+Kl(find(Kl==0))=-1e9;
 vpl = vpl - logSumExp(vpl);
 
 pl12 = logSumExp(vpl(1:2));

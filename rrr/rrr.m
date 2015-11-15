@@ -32,22 +32,22 @@ function [vi,FEl,SSl,TSTl,NFl] = rrr(Kl,vpl,nDesiredStates,vObserv)
       endfor
     endfor
   endif
-  [vmax,vrowi] = max(min(Kl,Kl')); [kmax,icol] = max(vmax); % find the largest smaller rate constant
+  [irow,icol,know] = maxNZ(min(Kl,Kl'));
   while (nStates>nDesiredStates)
-    [Kl,vpln,vin]   = groupStates(Kl,vi,vpl,vrowi(icol),icol,"nf"); % new decision matrix, assignment, and population vector
-    FEl  = groupStates(FEl,vi,vpl,vrowi(icol),icol,"fe"); % fast-equilibrium B.C. rates
-    SSl  = groupStates(SSl,vi,vpl,vrowi(icol),icol,"ss"); % steady state approx. rates
-    TSTl = groupStates(TSTl,vi,vpl,vrowi(icol),icol,"ts"); % TST rates
-    NFl  = groupStates(NFl,vi,vpl,vrowi(icol),icol,"nf"); % no-flux B.C. rates
-    [vmax,vrowi] = max(min(Kl,Kl')); [kmax,icol] = max(vmax); % find the largest smaller rate constant
+    [Kl,vpln,vin]   = groupStates(Kl,vi,vpl,irow,icol,"nf"); % new decision matrix, assignment, and population vector
+    FEl  = groupStates(FEl,vi,vpl,irow,icol,"fe"); % fast-equilibrium B.C. rates
+    SSl  = groupStates(SSl,vi,vpl,irow,icol,"ss"); % steady state approx. rates
+    TSTl = groupStates(TSTl,vi,vpl,irow,icol,"ts"); % TST rates
+    NFl  = groupStates(NFl,vi,vpl,irow,icol,"nf"); % no-flux B.C. rates
+    [irow,icol,know] = maxNZ(min(Kl,Kl'))
     vpl = vpln; vi = vin;
     nStates = size(Kl,1) % print progress
-    know = full(kmax) % print progress
   endwhile
 endfunction
 
 function [Kln,vpl,vi] = groupStates(Kl,vi,vpl,is1,is2,kType)
 % rate matrix reduction by 1 state
+  is12 = min(is1,is2); is2 = max(is1,is2); is1 = is12;
   R12 = Kl(is1,is2); R21 = Kl(is2,is1);
   Kln = Kl; % new matrix is created, so that the gradual modifications do not affect
   Kl(is1,is2) = 0; Kl(is2,is1) = 0; Kl(is1,is1) = 0; Kl(is2,is2) = 0; % delete rates between s1 and s2, so they do not appear among neighbours
