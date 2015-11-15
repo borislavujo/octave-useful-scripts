@@ -10,7 +10,7 @@ for i=1:n
     if (kmaxn>kmax)
       icol = i;
       irow = vi(irowi);
-      kmax = kmaxn;
+      kmax = full(kmaxn);
     endif
   endif
 endfor
