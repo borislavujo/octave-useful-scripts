@@ -26,7 +26,6 @@ function [vi,FEl,SSl,TSTl,NFl] = rrr(Kl,vpl,nDesiredStates,vObserv)
 	for i1 = vObs1
 	  for i2 = vObs2
 	    if (Kl(i1,i2)~=0)
-	      showi12 = [i1,i2]
 	      Kl(i1,i2) -= 1e9;
 	      Kl(i2,i1) -= 1e9;
 	    endif
@@ -56,12 +55,13 @@ function [Kln,vpl,vi] = groupStates(Kl,vi,vpl,is1,is2,kType)
   Kl(is1,is2) = 0; Kl(is2,is1) = 0; Kl(is1,is1) = 0; Kl(is2,is2) = 0; % delete rates between s1 and s2, so they do not appear among neighbours
 %  Kl(is1,find(Kl(is1,:)<-1e5))=0; Kl(is2,find(Kl(is2,:)<-1e5))=0; Kl(find(Kl(:,is1)<-1e5),is1)=0; Kl(find(Kl(:,is2)<-1e5),is1)=0; % discard too small rates
   vnei = unique([find(Kl(is1,:)),find(Kl(is2,:))]); % find all the neighbours of s1 and s2
-  nj = size(vnei,2)
+  nj = size(vnei,2);
   if (nj>0)
     for j=vnei
       vpj = [vpl(is1);vpl(is2);vpl(j)]; vpj = vpj - logSumExp(vpj); % vector of 3 eq. popul.
       Kij = [0,R12,Kl(is1,j);R21,0,Kl(is2,j);Kl(j,is1),Kl(j,is2),0]; % 3x3 log rate matrix
       if (max(max(Kij))-min(min(Kij))>1e3)
+	betweenObserv = [is1, is2, j]
 	[kab,kba] = tstlog(Kij,vpj);
       elseif (prod(kType=="fe")==1)
 	vKl1 = Kl(:,is1); vKl1(is2) = 0; vKl1(j) = 0; vKl1 = full(vKl1(find(vKl1))); kADl = logSumExp(vKl1); % adding the equilibration through the neighbours

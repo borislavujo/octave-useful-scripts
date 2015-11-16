@@ -2,6 +2,9 @@ function [lkAB, lkBA] = rxn(Kl,vlp,howFine,lstartdt,ratioEnd)
 % calculates rate constant between 2 states from a 3x3 rate matrix K and log of equilibrium populations vlp
 % grouped states are states 1 and 2, rate between (1+2) and (3) is calculated
 n = size(Kl,1); vlp = vlp - logSumExp(vlp);
+%vpe = exp(full(vlp))
+Kl(find(Kl==0))=-1e9;
+%K = expmat(Kl)
 if (nargin<3) howFine = 4; endif % each exponential step is divided into 2^howFine linear propagation steps
 if (nargin<4) lstartdt = -6; endif % the initial time step is exp(lstartdt) x (time of the fastest process in the network)
 if (nargin<5) ratioEnd = 1e-5; endif % criterion for stopping the propagation: 1-ratioEnd relaxed for all groupings
@@ -19,8 +22,13 @@ while (p>ratioEnd)
 endwhile
 ltau = expTail(vT,[Kl(1,3),Kl(2,3),Kl(3,1),Kl(3,2)],vlp,ltau); % add the tail (since the propagation ends early; see ratioEnd)
 [lkTSTAB,lkTSTBA] = tstlog(Kl,vlp); % calculate TST rates
-lkAB = min(logSumExp(vlp(1:2))-ltau,lkTSTAB); % if this rate is greater than the TST rate, it is a numerical error... return the worse estimate = TST
-lkBA = min(vlp(3)-ltau,lkTSTBA);
+lkAB = logSumExp(vlp(1:2))-ltau;
+%tstrxn = exp(lkTSTAB-lkAB)
+if (lkAB>lkTSTAB)
+  lkAB = lkTSTAB;
+  tstwatsmaller = 1
+endif
+lkBA = lkAB+vlp(3)-logSumExp(vlp(1:2));
 endfunction
 
 function [ltau,p] = intLog(lt,nFine,vT,vTs,vpl)
