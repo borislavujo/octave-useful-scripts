@@ -43,8 +43,8 @@ for j=1:n
     vpozmene = logSumDiff([min(vcol(1)+vpl(i),D3(i,j)-log(2)),-vcol(2);D3(i,j),N3(i,j)]);
     D3(i,j) = vpozmene(1);
   endfor
-%  Trms = [D3(:,j)+vpl, N3(:,j)];
-%  vkolkomimo = logSumDiff(Trms);
+  ujo = logSumExp(L3(:,n));
+  L3(:,n) = L3(:,n) - ujo;
 endfor
 endfunction
 
