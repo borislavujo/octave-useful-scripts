@@ -18,7 +18,7 @@ endfor
 % now D
 for i=1:n
   for j=1:n
-    if (L3(i,j)>-10)
+    if (L3(i,j)-vpl>h)
       Trms = zeros(n*3,2); % the second column is 1 if the term is to be subtracted
       for k=1:n
 	inow = (k-1)*3+1;
