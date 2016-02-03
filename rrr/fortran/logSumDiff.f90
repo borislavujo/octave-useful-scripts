@@ -9,8 +9,8 @@
 ! **********************************************************************
 ! *                                                                    *
 ! * Author:     Boris Fackovec                                         *
-! * Date:       21/01/2016                                             *
-! * Version:    1.0                                                    *
+! * Date:       03/02/2016                                             *
+! * Version:    1.1                                                    *
 ! *                                                                    *
 ! **********************************************************************
 !
@@ -27,7 +27,7 @@
    INTEGER :: i
    INTEGER, DIMENSION(n) :: vInd, vI
    DOUBLE PRECISION :: l, l0
-   DOUBLE PRECISION, DIMENSION(2) :: v0
+   DOUBLE PRECISION, DIMENSION(2) :: vUjo
    LOGICAL :: b, b0
 !
 ! -------------------------------------------------------------------
@@ -51,10 +51,11 @@
       l0 = vL(vI(i))
       b0 = vbPM(vI(i))
       IF (b0.EQV.bPM) THEN
-         v0 = (/lSD,l0/)
-         CALL logSumExp(2,v0,lSD)
+         vUjo(1) = lSD
+         vUjo(2) = l0
+         CALL logSumExp(2,vUjo,lSD)
       ELSE IF (lSD.GT.l0) THEN
-         CALL logDiffExp(lSD,l0,l)
+         CALL LogDiffExp(lSD,l0,l)
          lSD = l
       ELSE IF (l0.GT.lSD) THEN
          CALL LogDiffExp(l0,lSD,l)

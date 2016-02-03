@@ -3,13 +3,13 @@
  SUBROUTINE MultLogMat(n,vpl,L1,D1,Nb1,L2,D2,Nb2,L3,D3,Nb3)
 ! **********************************************************************
 ! *                                                                    *
-! * Multiplies transition matrix in the log and log(1-t) formalisms    *
+! * Multiplies transition matrices in the log and log(1-t) formalisms  *
 ! *                                                                    *
 ! **********************************************************************
 ! *                                                                    *
 ! * Author:     Boris Fackovec                                         *
-! * Date:       30/01/2016                                             *
-! * Version:    1.0                                                    *
+! * Date:       03/02/2016                                             *
+! * Version:    1.1                                                    *
 ! *                                                                    *
 ! **********************************************************************
 !
@@ -28,7 +28,7 @@
    INTEGER :: i, j, k
    DOUBLE PRECISION :: pl, ltemp
    DOUBLE PRECISION :: h
-   INTEGER, DIMENSION(n) :: nind
+   INTEGER :: nind
    DOUBLE PRECISION, DIMENSION(n) :: vlnow
    DOUBLE PRECISION, DIMENSION(3*n) :: vtr
    LOGICAL :: btemp, bl
@@ -38,7 +38,7 @@
 ! -------------------------------------------------------------------
 !
 !
-!  calculate L3 just from L1 and L2
+!  L3 = L1 * L2
 !
    cycCalcRowL3: DO j=1,n
       cycCalcColL3: DO i=1,n
@@ -48,6 +48,9 @@
          CALL LogSumExp(n,vlnow,ltemp)
          L3(i,j) = ltemp
       ENDDO cycCalcColL3
+!
+!  normalise L3
+!
       cycCalcSumColL3: DO i=1,n
          vlnow = L3(i,j)
       ENDDO cycCalcSumColL3

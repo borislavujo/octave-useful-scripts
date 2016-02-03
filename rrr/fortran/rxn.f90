@@ -4,16 +4,17 @@
 ! **********************************************************************
 ! *                                                                    *
 ! * Calculates log rate constants between 2 states                     *
-! *                                                                    *
+! *   using enhanced exponential lumping                               *
 ! **********************************************************************
 ! *                                                                    *
 ! * Author:     Boris Fackovec                                         *
-! * Date:       02/02/2016                                             *
-! * Version:    1.0                                                    *
+! * Date:       03/02/2016                                             *
+! * Version:    1.1                                                    *
 ! *                                                                    *
 ! **********************************************************************
 !
    IMPLICIT NONE
+   USE ParamsRXN, ONLY: howFine, lstartdt, thresh
    INTEGER, INTENT(IN) :: n
    DOUBLE PRECISION, INTENT(IN), DIMENSION(n) :: vpl
    DOUBLE PRECISION, INTENT(IN), DIMENSION(n,n) :: Kl
@@ -24,8 +25,8 @@
 !
    INTEGER :: i, j, k
    DOUBLE PRECISION :: pl, ltemp, xl, thresh, doldd, dmax, pl1, pl2
-   DOUBLE PRECISION :: lds, ldt, lstartdt, ltnow, ltau
-   INTEGER :: howFine, nFine, na
+   DOUBLE PRECISION :: lds, ldt, ltnow, ltau
+   INTEGER :: nFine, na
    DOUBLE PRECISION, DIMENSION(n,n) :: L1, D1, Ls, Ds, Lp, Dp, &
         Dold, Ltem, Dtem
    LOGICAL, DIMENSION(n,n) :: Nb1, Nbs, Nbp, Nbtem
