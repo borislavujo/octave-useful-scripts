@@ -19,8 +19,8 @@
    INTEGER, INTENT(IN) :: n
    DOUBLE PRECISION, INTENT(IN), DIMENSION(n) :: vL
    LOGICAL, INTENT(IN), DIMENSION(n) :: vbPM
-   DOUBLE PRECISION, INTENT(IN) :: lSD
-   LOGICAL, INTENT(IN) :: bPM
+   DOUBLE PRECISION, INTENT(OUT) :: lSD
+   LOGICAL, INTENT(OUT) :: bPM
 !
 ! -------------------------------------------------------------------
 !
@@ -41,13 +41,13 @@
    CALL MRGRNK(vL,vInd)
    cycInds: DO i=1,n
       vI(vInd(i)) = i
-   ENDDO cycSetMasses
+   ENDDO cycInds
 !
 !  now start from smallest term and add/subtract
 !
    lSD = vL(vI(1))
    bPM = vbPM(vI(1))
-   cycAddSub: DO i=2:n
+   cycAddSub: DO i=2,n
       l0 = vL(vI(i))
       b0 = vbPM(vI(i))
       IF (b0.EQV.bPM) THEN
@@ -62,7 +62,7 @@
          lSD = l
          bPM = b0
       ELSE
-         lSD = -1e99
+         lSD = -99e9
          bPM = .TRUE.
       ENDIF
    ENDDO cycAddSub
@@ -92,7 +92,7 @@
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: n
    DOUBLE PRECISION, INTENT(IN), DIMENSION(n) :: vL
-   DOUBLE PRECISION, INTENT(IN) :: lSE
+   DOUBLE PRECISION, INTENT(OUT) :: lSE
 !
 ! -------------------------------------------------------------------
 !
@@ -149,29 +149,31 @@
    IMPLICIT NONE
    DOUBLE PRECISION, INTENT(IN) :: l1
    DOUBLE PRECISION, INTENT(IN) :: l2
-   DOUBLE PRECISION, INTENT(IN) :: ldif
+   DOUBLE PRECISION, INTENT(OUT) :: ldif
 !
 ! -------------------------------------------------------------------
 !
-   DOUBLE PRECISION :: l
+   DOUBLE PRECISION :: l, ll1, ll2
 !
 ! -------------------------------------------------------------------
 !
    IF (l1.LT.l2) THEN
       WRITE(*,*) "warning: switching elements in LogDiffExp!"
-      l = l1
-      l1 = l2
-      l2 = l
+      ll1 = l2
+      ll2 = l1
    ELSE IF (l1.EQ.l2) THEN
-      ldif = -1e99
+      ldif = -99e9
       RETURN
+   ELSE
+      ll1 = l1
+      ll2 = l2
    ENDIF
-   l = l2-l1
-   lSE = l1 + LOG(1+EXP(l))
+   l = ll2-ll1
+   ldif = ll1 + LOG(1+EXP(l))
 !
    RETURN
 !
 ! -------------------------------------------------------------------
 !
- END SUBROUTINE LogSumExp
+ END SUBROUTINE LogDiffExp
 !
