@@ -30,9 +30,11 @@
    DOUBLE PRECISION :: h
    INTEGER :: nind
    DOUBLE PRECISION, DIMENSION(n) :: vlnow
+   DOUBLE PRECISION, DIMENSION(2) :: vUjo
    DOUBLE PRECISION, DIMENSION(3*n) :: vtr
    LOGICAL :: btemp, bl
    LOGICAL, DIMENSION(3*n) :: vbtr
+   LOGICAL, DIMENSION(2) :: vbUjo
    PARAMETER (h=-1.0d1)
 !
 ! -------------------------------------------------------------------
@@ -60,7 +62,7 @@
       ENDDO cycNormColL3
    ENDDO cycCalcRowL3
 !
-!  calculate D3 AND N3
+!  calculate D3 AND Nb3
 !
    cycCalcRowD3: DO i=1,n
       cycCalcColD3: DO j=1,n
@@ -69,20 +71,20 @@
                vtr((k-1)*3+1)  = vpl(k) + D1(i,k)
                vtr((k-1)*3+2)  = vpl(k)           + D2(k,j)
                vtr(k*3)        = vpl(k) + D1(i,k) + D2(k,j)
-               vbtr((k-1)*3+1) = N1(i,k)
-               vbtr((k-1)*3+2) = N2(k,j)
-               vbtr(k*3)       = (N1(i,k).AND.N2(k,j)).OR. &
-                    ((.NOT.N1(i,k)).AND.(.NOT.N2(k,j)))
+               vbtr((k-1)*3+1) = Nb1(i,k)
+               vbtr((k-1)*3+2) = Nb2(k,j)
+               vbtr(k*3)       = (Nb1(i,k).AND.Nb2(k,j)).OR. &
+                    ((.NOT.Nb1(i,k)).AND.(.NOT.Nb2(k,j)))
             ENDDO cycFillvtr
             CALL LogSumDiff(3*n,vtr,vbtr,ltemp,btemp)
-            N3(i,j) = btemp
+            Nb3(i,j) = btemp
             D3(i,j) = ltemp
          ELSE
             IF (L3(i,j).GT.vpl(i)) THEN
-               N3(i,j) = .TRUE.
+               Nb3(i,j) = .TRUE.
                D3(i,j) = LOG(EXP(L3(i,j)-vpl(i))-1)
             ELSE
-               N3(i,j) = .FALSE.
+               Nb3(i,j) = .FALSE.
                D3(i,j) = LOG(EXP(vpl(i)-L3(i,j))-1)
             ENDIF
          ENDIF
@@ -94,14 +96,14 @@
    cycNormCols: DO j=1,n
       cycGetTrms: DO i=1,n
          vtr(i)  = D3(i,j)
-         vbtr(i) = N3(i,j)
+         vbtr(i) = Nb3(i,j)
       ENDDO cycGetTrms
       CALL LogSumDiff(n,vtr,vbtr,pl,bl)
       cycDoTrms: DO i=1,n
-         vujo(1) = MIN(pl+vpl(i),D3(i,j)-LOG(2))
-         vujo(2) = D3(i,j)
-         vbujo(1) = .NOT.bl
-         vbujo(2) = N3(i,j)
+         vUjo(1) = MIN(pl+vpl(i),D3(i,j)-LOG(2.0d0))
+         vUjo(2) = D3(i,j)
+         vbUjo(1) = .NOT.bl
+         vbUjo(2) = Nb3(i,j)
          CALL LogSumDiff(2,vujo,vbujo,ltemp,btemp)
          D3(i,j) = ltemp
       ENDDO cycDoTrms

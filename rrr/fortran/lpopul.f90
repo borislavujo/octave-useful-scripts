@@ -20,13 +20,13 @@
    LOGICAL, INTENT(IN), DIMENSION(n,n) :: Nb
    DOUBLE PRECISION, INTENT(IN), DIMENSION(n) :: vpl
    LOGICAL, INTENT(IN), DIMENSION(n) :: vba
-   DOUBLE PRECISION, INTENT(OUT) :: x
+   DOUBLE PRECISION, INTENT(OUT) :: xl
 !
 ! -------------------------------------------------------------------
 !
    INTEGER :: na, i, j, k
    DOUBLE PRECISION :: pl, pl1, pl2, pltemp
-   INTEGER, DIMENSION(n) :: nind
+   INTEGER, DIMENSION(n) :: vind
    DOUBLE PRECISION, DIMENSION(n) :: vpla, vplnow, vpltemp
    DOUBLE PRECISION, DIMENSION(n**2) :: vf1
    LOGICAL :: bf1
@@ -58,7 +58,8 @@
       vplnow(i) = pltemp
    ENDDO cycSumCols
    CALL LogSumExp(na,vplnow,pl)
-   xl = logDiffExp(pl,pl1)-pl2
+   CALL LogDiffExp(pl,pl1,xl)
+   xl = xl - pl2
    IF (xl.LT.-3d0) THEN
       RETURN
    ENDIF
@@ -69,7 +70,7 @@
       cycAddRows: DO j=1,na
          k = (i-1)*na+j
          vf1(k) = vpl(vind(i)) + vpl(vind(j)) + D(vind(i),vind(j))
-         vb1f(k) = N(vind(i),vind(j))
+         vbf1(k) = Nb(vind(i),vind(j))
       ENDDO cycAddRows
    ENDDO cycAddCols
    CALL LogSumDiff(na**2,vf1,vbf1,pl,bf1)

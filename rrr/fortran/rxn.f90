@@ -1,6 +1,6 @@
 !
 !
- SUBROUTINE RXN(n,Kl,vpl,vba,lkab,lkba)
+ SUBROUTINE RXN(n,Kl0,vpl0,vba,lkab,lkba)
 ! **********************************************************************
 ! *                                                                    *
 ! * Calculates log rate constants between 2 states                     *
@@ -13,43 +13,44 @@
 ! *                                                                    *
 ! **********************************************************************
 !
-   IMPLICIT NONE
    USE ParamsRXN, ONLY: howFine, lstartdt, thresh
+   IMPLICIT NONE
    INTEGER, INTENT(IN) :: n
-   DOUBLE PRECISION, INTENT(IN), DIMENSION(n) :: vpl
-   DOUBLE PRECISION, INTENT(IN), DIMENSION(n,n) :: Kl
+   DOUBLE PRECISION, INTENT(IN), DIMENSION(n) :: vpl0
+   DOUBLE PRECISION, INTENT(IN), DIMENSION(n,n) :: Kl0
    LOGICAL, INTENT(IN), DIMENSION(n) :: vba
    DOUBLE PRECISION, INTENT(OUT) :: lkab, lkba
 !
 ! -------------------------------------------------------------------
 !
    INTEGER :: i, j, k
-   DOUBLE PRECISION :: pl, ltemp, xl, thresh, doldd, dmax, pl1, pl2
+   DOUBLE PRECISION :: pl, ltemp, xl, doldd, dmax, pl1, pl2
    DOUBLE PRECISION :: lds, ldt, ltnow, ltau
    INTEGER :: nFine, na
-   DOUBLE PRECISION, DIMENSION(n,n) :: L1, D1, Ls, Ds, Lp, Dp, &
+   DOUBLE PRECISION, DIMENSION(n,n) :: Kl, L1, D1, Ls, Ds, Lp, Dp, &
         Dold, Ltem, Dtem
    LOGICAL, DIMENSION(n,n) :: Nb1, Nbs, Nbp, Nbtem
-   DOUBLE PRECISION, DIMENSION(n) :: vlnow
+   DOUBLE PRECISION, DIMENSION(n) :: vlnow, vpla, vpl
    DOUBLE PRECISION, DIMENSION(2) :: vUjo
    DOUBLE PRECISION, DIMENSION(3*n) :: vtr
    LOGICAL :: btemp, bl
    LOGICAL, DIMENSION(3*n) :: vbtr
    DOUBLE PRECISION, DIMENSION(9999,2) :: X ! max ratio of timescales = 2^(9999/(2^3))
-   INTEGER :: sizeX
-   PARAMETER (howFine=3)
-   PARAMETER (lstartdt = -6d0)
-   PARAMETER (thresh = -6d0)
+   INTEGER :: sizeX, nind
+!   PARAMETER (howFine=3)
+!   PARAMETER (lstartdt = -6d0)
+!   PARAMETER (thresh = -6d0)
 !
 ! -------------------------------------------------------------------
 !
 !
 !  make sure populations sum to 1 and rate mat satisfies detailed bal
 !
-   CALL LogSumExp(n,vpl,pl)
+   CALL LogSumExp(n,vpl0,pl)
    cycNormvpl: DO i=1,n
-      vpl(i) = vpl(i) - pl
+      vpl(i) = vpl0(i) - pl
    ENDDO cycNormvpl
+   Kl = Kl0
    CALL SymmetriseRateMat(n,Kl,vpl)
 !
 !  calculate quilibrium populations
@@ -59,16 +60,15 @@
       IF (vba(i)) THEN 
          na = na + 1 
          vpla(na) = vpl(i)
-         vind(na) = i
       ENDIF
    ENDDO cycCountA
-   CALL LogSumExp(na,vpl,pl1)
+   CALL LogSumExp(na,vpla,pl1)
    CALL LogDiffExp(0.0d0,pl1,pl2)
 !
 !  calculate optimal minimum (log) time step lds
 !
    nFine = 2**howFine
-   lds = -MAXVAL(Kl) + lstartdt - REAL(howFine)*LOG(2)
+   lds = -MAXVAL(Kl) + lstartdt - REAL(howFine)*LOG(2.0d0)
 !
 !  produce log transition matrix
 !
@@ -91,11 +91,11 @@
       cycDoCols: DO j=1,n
          IF (Ls(i,j).GT.vpl(i)) THEN
             Nbs(i,j) = .TRUE.
-            CALL LogDiffExp(0.0d0,vpl(i)-L(i,j),ltemp)
-            Ds(i,j) = ltemp + L(i,j) - vpl(i)
+            CALL LogDiffExp(0.0d0,vpl(i)-Ls(i,j),ltemp)
+            Ds(i,j) = ltemp + Ls(i,j) - vpl(i)
          ELSE
             Nbs(i,j) = .FALSE.
-            CALL LogDiffExp(0.0d0,L(i,j)-vpl(i),ltemp)
+            CALL LogDiffExp(0.0d0,Ls(i,j)-vpl(i),ltemp)
             Ds(i,j) = ltemp
          ENDIF
       ENDDO cycDoCols
@@ -110,16 +110,16 @@
       CALL MultLogMat(n,vpl,L1,D1,Nb1,L1,D1,Nb1,L1,D1,Nb1)
    ENDDO cycDoubling
    xl = 0
-   X(1,1) = -1e99
+   X(1,1) = -99e9
    X(1,2) = xl
-   ldt = lds + REAL(howFine)*LOG(2)
+   ldt = lds + REAL(howFine)*LOG(2.0d0)
    doldd = 1.0d1
    dmax = 1.0d1
    nind = 2
 !
 !  main cycle
 !
-   cycMain: DO WHILE(((x.GT.-5).OR.(doldd.GT.-3)).AND.(dmax.GT.thresh))
+   cycMain: DO WHILE( ((xl.GT.-5).OR.(doldd.GT.-3)) .AND.(dmax.GT.thresh))
       Dold = D1
       CALL LPopul(n,L1,D1,Nb1,vpl,vba,xl)
       X(nind,1) = ldt
@@ -151,8 +151,8 @@
       Ls = Ltem
       Ds = Dtem
       Nbs = Nbtem
-      ldt = ldt + LOG(2)
-      lds = lds + LOG(2)
+      ldt = ldt + LOG(2.0d0)
+      lds = lds + LOG(2.0d0)
       doldd = LOG(SUM(ABS(D1-Dold)))
       dmax = MAXVAL(D1)
    ENDDO cycMain
@@ -173,7 +173,7 @@
 ! **********************************************************************
 ! *                                                                    *
 ! * Ensures the rate matrix satisfies detailed balance                 *
-! *   Kl must have -1e99 for zero rates and -1e99 at its diagonal      *                                                                 *
+! *   Kl must have -99e9 for zero rates and -1e99 at its diagonal      *
 ! *                                                                    *
 ! **********************************************************************
 ! *                                                                    *
@@ -237,7 +237,7 @@
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: n
    DOUBLE PRECISION, INTENT(IN), DIMENSION(n,2) :: X
-   DOUBLE PRECISION, INTENT(OUT), :: ltau
+   DOUBLE PRECISION, INTENT(OUT) :: ltau
 !
 ! -------------------------------------------------------------------
 !
@@ -253,7 +253,7 @@
       vUjo(1) = X(i,2)
       vUjo(2) = X(i+1,2)
       CALL LogSumExp(2,vUjo,pl)
-      pl = pl - LOG(2)
+      pl = pl - LOG(2.0d0)
       vUjo(1) = ltau
       vUjo(2) = ldt + pl
       CALL LogSumExp(2,vUjo,ltau)
