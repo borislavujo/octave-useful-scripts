@@ -67,7 +67,7 @@
 !
 !  do relaxation
 !
-   CALL RXN(ns,Kl,vpl,vba,lkab,lkba)
+   CALL RXN(ns,Kl,vpl,vba,klab,klba)
 !
    STOP
 !

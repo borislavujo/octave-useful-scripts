@@ -30,7 +30,7 @@
    DOUBLE PRECISION, DIMENSION(n,n) :: Kl, L1, D1, Ls, Ds, Lp, Dp, &
         Dold, Ltem, Dtem
    LOGICAL, DIMENSION(n,n) :: Nb1, Nbs, Nbp, Nbtem
-   DOUBLE PRECISION, DIMENSION(n) :: vlnow, vpla, vpl
+   DOUBLE PRECISION, DIMENSION(n) :: vlnow, vpla, vpl, vtemp
    DOUBLE PRECISION, DIMENSION(2) :: vUjo
    DOUBLE PRECISION, DIMENSION(3*n) :: vtr
    LOGICAL :: btemp, bl
@@ -43,6 +43,7 @@
 !
 ! -------------------------------------------------------------------
 !
+   WRITE(*,*) "Subroutine RXN"
 !
 !  make sure populations sum to 1 and rate mat satisfies detailed bal
 !
@@ -55,6 +56,7 @@
 !
 !  calculate quilibrium populations
 !
+   WRITE(*,*) "Calc equil populs"
    na = 0
    cycCountA: DO i=1,n
       IF (vba(i)) THEN 
@@ -68,25 +70,35 @@
 !  calculate optimal minimum (log) time step lds
 !
    nFine = 2**howFine
-   lds = -MAXVAL(Kl) + lstartdt - REAL(howFine)*LOG(2.0d0)
+   cycDiagRates: DO j=1,n
+      cycRows: DO i=1,n
+         vlnow(i) = Kl(i,j)
+      ENDDO cycRows
+      CALL LogSumExp(n,vlnow,pl)
+      vtemp(j) = pl
+   ENDDO cycDiagRates
+   lds = -MAXVAL(vtemp) + lstartdt - REAL(howFine)*LOG(2.0d0)
 !
 !  produce log transition matrix
 !
+   WRITE(*,*) "Make the log trans mat"
    cycTMCol: DO j=1,n
       cycTMRow: DO i=1,n
          Ls(i,j) = Kl(i,j) + lds
          vlnow(i) = Ls(i,j)
       ENDDO cycTMRow
-      CALL LogSumExp(n,vlnow,ltemp)
+      vlnow(j) = vlnow(n)
+      CALL LogSumExp(n-1,vlnow,ltemp)
       CALL LogDiffExp(0.0d0,ltemp,pl)
-      vUjo(1) = pl
-      vUjo(2) = Ls(j,j)
-      CALL LogSumExp(2,vUjo,ltemp)
-      Ls(j,j) = ltemp
+!      vUjo(1) = pl
+!      vUjo(2) = Ls(j,j)
+!      CALL LogSumExp(2,vUjo,ltemp)
+      Ls(j,j) = pl
    ENDDO cycTMCol
 !
 !  produce D and N matrices for log(1-t) formalism
 !
+   WRITE(*,*) "produce D and N matrices"
    cycDoRows: DO i=1,n
       cycDoCols: DO j=1,n
          IF (Ls(i,j).GT.vpl(i)) THEN
@@ -103,10 +115,12 @@
 !
 !  log transition matrices for dt = nFine*exp(lds)
 !
+   WRITE(*,*) "get the matrices for nFine*lds"
    L1 = Ls
    D1 = Ds
    Nb1 = Nbs
    cycDoubling: DO i=1,howFine
+      WRITE(*,*) "which fine", i, "out of", howFine
       CALL MultLogMat(n,vpl,L1,D1,Nb1,L1,D1,Nb1,L1,D1,Nb1)
    ENDDO cycDoubling
    xl = 0
@@ -119,11 +133,13 @@
 !
 !  main cycle
 !
+   WRITE(*,*) "Main cycle"
    cycMain: DO WHILE( ((xl.GT.-5).OR.(doldd.GT.-3)) .AND.(dmax.GT.thresh))
       Dold = D1
       CALL LPopul(n,L1,D1,Nb1,vpl,vba,xl)
       X(nind,1) = ldt
       X(nind,2) = xl
+      WRITE(*,*) ldt, xl
       nind = nind + 1
       Lp = L1
       Dp = D1
@@ -141,6 +157,7 @@
          ltnow = ltemp
          X(nind,1) = ltnow
          X(nind,2) = xl
+         WRITE(*,*) ltnow, xl
          nind = nind + 1
       ENDDO cycLinProp
       CALL MultLogMat(n,vpl,Ltem,Dtem,Nbtem,L1,D1,Nb1,L1,D1,Nb1)
