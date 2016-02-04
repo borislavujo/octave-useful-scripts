@@ -57,7 +57,7 @@
    OPEN(UNIT=4,STATUS='OLD',FILE='vb')
    cycREADvb: DO i=1,ns
       READ(4,*) j
-      IF (i.EQ.0) THEN
+      IF (j.EQ.0) THEN
          vba(i) = .FALSE.
       ELSE
          vba(i) = .TRUE.

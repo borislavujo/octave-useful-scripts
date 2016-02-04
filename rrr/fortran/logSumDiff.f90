@@ -97,7 +97,7 @@
 ! -------------------------------------------------------------------
 !
    INTEGER :: i
-   DOUBLE PRECISION :: l
+   DOUBLE PRECISION :: l, ujo
    DOUBLE PRECISION, DIMENSION(n) :: vLT
 !
 ! -------------------------------------------------------------------
@@ -113,15 +113,21 @@
    ENDIF
 !
    vLT = vL
+!   WRITE(*,*) vLT
    CALL REFSOR(vLT)
+!   WRITE(*,*) vLT
+!   STOP
 !
 !  now start adding from the smallest term to the largest
 !
-   lSE = vLT(n)
-   cycInds: DO i=1,n-1
-      l = vLT(n-i)
-      lSE = l + LOG(1+EXP(lSE-l))
+   lSE = vLT(1)
+   cycInds: DO i=2,n
+      l = vLT(i)
+      ujo = LOG(1.0d0+EXP(lSE-l))
+!      WRITE(*,*) "l", l, "ujo", ujo
+      lSE = l + ujo
    ENDDO cycInds
+!   STOP
 !  a few orders expression for small values of lSE-l could be used
 !  in order to speed up the calculation
 !

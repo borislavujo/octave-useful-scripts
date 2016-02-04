@@ -77,7 +77,8 @@
       CALL LogSumExp(n,vlnow,pl)
       vtemp(j) = pl
    ENDDO cycDiagRates
-   lds = -MAXVAL(vtemp) + lstartdt - REAL(howFine)*LOG(2.0d0)
+   lds = -MAXVAL(vtemp) + lstartdt - REAL(howFine)*LOG(2.0d0) ! - LOG(2.0d0)
+   WRITE(*,*) "lds", lds
 !
 !  produce log transition matrix
 !
@@ -121,7 +122,11 @@
    Nb1 = Nbs
    cycDoubling: DO i=1,howFine
       WRITE(*,*) "which fine", i, "out of", howFine
-      CALL MultLogMat(n,vpl,L1,D1,Nb1,L1,D1,Nb1,L1,D1,Nb1)
+      CALL LPopul(n,L1,D1,Nb1,vpl,vba,xl)
+      CALL MultLogMat(n,vpl,L1,D1,Nb1,L1,D1,Nb1,Ltem,Dtem,Nbtem)
+      L1 = Ltem
+      D1 = Dtem
+      Nb1 = Nbtem
    ENDDO cycDoubling
    xl = 0
    X(1,1) = -99e9
@@ -136,20 +141,22 @@
    WRITE(*,*) "Main cycle"
    cycMain: DO WHILE( ((xl.GT.-5).OR.(doldd.GT.-3)) .AND.(dmax.GT.thresh))
       Dold = D1
+      WRITE(*,*) "L(1,1)", L1(1,1)
       CALL LPopul(n,L1,D1,Nb1,vpl,vba,xl)
       X(nind,1) = ldt
       X(nind,2) = xl
-      WRITE(*,*) ldt, xl
+      WRITE(*,*) nind, ldt, xl
       nind = nind + 1
       Lp = L1
       Dp = D1
       Nbp = Nb1
       ltnow = ldt
       cycLinProp: DO i=1,nFine-1
-         CALL MultLogMat(n,vpl,Ltem,Dtem,Nbtem,Lp,Dp,Nbp,Ls,Ds,Nbs)
+         CALL MultLogMat(n,vpl,Ls,Ds,Nbs,Lp,Dp,Nbp,Ltem,Dtem,Nbtem)
          Lp = Ltem
          Dp = Dtem
          Nbp = Nbtem
+         WRITE(*,*) "L(1,1)", Lp(1,1)
          CALL LPopul(n,Lp,Dp,Nbp,vpl,vba,xl)
          vUjo(1) = ltnow
          vUjo(2) = lds
@@ -157,14 +164,14 @@
          ltnow = ltemp
          X(nind,1) = ltnow
          X(nind,2) = xl
-         WRITE(*,*) ltnow, xl
+         WRITE(*,*) nind, ltnow, xl
          nind = nind + 1
       ENDDO cycLinProp
-      CALL MultLogMat(n,vpl,Ltem,Dtem,Nbtem,L1,D1,Nb1,L1,D1,Nb1)
+      CALL MultLogMat(n,vpl,L1,D1,Nb1,L1,D1,Nb1,Ltem,Dtem,Nbtem)
       L1 = Ltem
       D1 = Dtem
       Nb1 = Nbtem
-      CALL MultLogMat(n,vpl,Ltem,Dtem,Nbtem,Ls,Ds,Nbs,Ls,Ds,Nbs)
+      CALL MultLogMat(n,vpl,Ls,Ds,Nbs,Ls,Ds,Nbs,Ltem,Dtem,Nbtem)
       Ls = Ltem
       Ds = Dtem
       Nbs = Nbtem

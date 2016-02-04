@@ -13,7 +13,7 @@
 ! *                                                                    *
 ! **********************************************************************
 !
-   INTEGER :: howFine = 3
+   INTEGER :: howFine = 2
    DOUBLE PRECISION :: lstartdt = -6.0d0
    DOUBLE PRECISION :: thresh = -6.0d0
 !
