@@ -42,6 +42,10 @@ function [vi,FEl,SSl,TSTl,NFl] = rrr(Kl,vpl,nDesiredStates,vObserv)
     TSTl = groupStates(TSTl,vi,vpl,irow,icol,"ts"); % TST rates
     NFl  = groupStates(NFl,vi,vpl,irow,icol,"nf"); % no-flux B.C. rates
     [irow,icol,know] = maxNZ(min(Kl,Kl'))
+    kTSl = TSTl(irow,icol)
+    kFEl = FEl(irow,icol)
+    kNFl = NFl(irow,icol)
+    kSSl = SSl(irow,icol)
     vpl = vpln; vi = vin;
     nStates = size(Kl,1) % print progress
   endwhile
@@ -52,20 +56,22 @@ function [Kln,vpl,vi] = groupStates(Kl,vi,vpl,is1,is2,kType)
   is12 = min(is1,is2); is2 = max(is1,is2); is1 = is12;
   R12 = Kl(is1,is2); R21 = Kl(is2,is1);
   Kln = Kl; % new matrix is created, so that the gradual modifications do not affect
-  Kl(is1,is2) = 0; Kl(is2,is1) = 0; Kl(is1,is1) = 0; Kl(is2,is2) = 0; % delete rates between s1 and s2, so they do not appear among neighbours
+  Kl(is1,is2) = -1e9; Kl(is2,is1) = -1e9; Kl(is1,is1) = -1e9; Kl(is2,is2) = -1e9; % delete rates between s1 and s2, so they do not appear among neighbours
 %  Kl(is1,find(Kl(is1,:)<-1e5))=0; Kl(is2,find(Kl(is2,:)<-1e5))=0; Kl(find(Kl(:,is1)<-1e5),is1)=0; Kl(find(Kl(:,is2)<-1e5),is1)=0; % discard too small rates
-  vnei = unique([find(Kl(is1,:)),find(Kl(is2,:))]); % find all the neighbours of s1 and s2
-  nj = size(vnei,2);
-  if (nj>0)
+  vnei = unique([find(Kl(is1,:)>-1e8),find(Kl(is2,:)>-1e8)]); % find all the neighbours of s1 and s2
+  [nnj,nj] = size(vnei)
+  if and(nj>0,nnj>0)
     for j=vnei
       vpj = [vpl(is1);vpl(is2);vpl(j)]; vpj = vpj - logSumExp(vpj); % vector of 3 eq. popul.
       Kij = [0,R12,Kl(is1,j);R21,0,Kl(is2,j);Kl(j,is1),Kl(j,is2),0]; % 3x3 log rate matrix
-      if (max(max(Kij))-min(min(Kij))>1e3)
-	betweenObserv = [is1, is2, j]
-	[kab,kba] = tstlog(Kij,vpj);
-      elseif (prod(kType=="fe")==1)
-	vKl1 = Kl(:,is1); vKl1(is2) = 0; vKl1(j) = 0; vKl1 = full(vKl1(find(vKl1))); kADl = logSumExp(vKl1); % adding the equilibration through the neighbours
-	vKl2 = Kl(:,is2); vKl2(is1) = 0; vKl2(j) = 0; vKl2 = full(vKl2(find(vKl2))); kBDl = logSumExp(vKl2);
+%      if (max(max(Kij))-min(min(Kij))>1e3)
+%	davame = kType
+%	betweenObserv = [is1, is2, j];
+%	[kab,kba] = tstlog(Kij,vpj);
+      if (prod(kType=="fe")==1)
+	davame = [kType, "fe"]
+	vKl1 = Kl(:,is1); vKl1(is2) = 0; vKl1(j) = 0; vKl1 = full(vKl1(find(vKl1>-1e8))); kADl = logSumExp(vKl1); % adding the equilibration through the neighbours
+	vKl2 = Kl(:,is2); vKl2(is1) = 0; vKl2(j) = 0; vKl2 = full(vKl2(find(vKl2>-1e8))); kBDl = logSumExp(vKl2);
 	sumflux = logSumExp([vpl(1)+kADl;vpl(2)+kBDl]); 
 	f1l = vpl(1)+kADl-sumflux; 
 	f2l = vpl(2)+kBDl-sumflux; 
@@ -73,10 +79,13 @@ function [Kln,vpl,vi] = groupStates(Kl,vi,vpl,is1,is2,kType)
 	Kij(2,1) = logSumExp([Kij(2,1);kADl+f2l]);
 	[kab,kba] = analyt3x3(Kij,vpj);
       elseif (prod(kType=="nf")==1)
+	davame = [kType, "nf"]
 	[kab,kba] = analyt3x3(Kij,vpj);
       elseif (prod(kType=="ss")==1)
+	davame = [kType, "ss"]
 	[kab,kba] = sslog(Kij,vpj);
       else
+	vdavame = kType
 	[kab,kba] = tstlog(Kij,vpj);
       endif
       Kln(is1,j) = kab;
