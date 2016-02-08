@@ -58,7 +58,7 @@
       CALL LogSumExp(na,vpltemp,pltemp)
       vplnow(i) = pltemp
    ENDDO cycSumCols
-   WRITE(*,*) "individual vpls", vplnow(1:na)
+!   WRITE(*,*) "individual vpls", vplnow(1:na)
    CALL LogSumExp(na,vplnow,pl)
    WRITE(*,*) "total state a", pl
    CALL LogDiffExp(pl,pl1,xl)
