@@ -37,7 +37,7 @@
 !
 !  find the size of state A and calculate its population
 !
-   WRITE(*,*) "Subroutine LPopul"
+!   WRITE(*,*) "Subroutine LPopul"
    na = 0
    cycCountA: DO i=1,n
       IF (vba(i)) THEN 
@@ -60,13 +60,13 @@
    ENDDO cycSumCols
 !   WRITE(*,*) "individual vpls", vplnow(1:na)
    CALL LogSumExp(na,vplnow,pl)
-   WRITE(*,*) "total state a", pl
+   WRITE(*,'(A20,F12.7)') "total state a", pl
    CALL LogDiffExp(pl,pl1,xl)
    xl = xl - pl2
-   WRITE(*,*) "xl from L", xl
-   IF (xl.GT.-3d0) THEN
-      RETURN
-   ENDIF
+   WRITE(*,'(A20,F12.7)') "xl from L", xl
+!   IF (xl.GT.-3d0) THEN
+!      RETURN
+!   ENDIF
 !
 !   get the population from log(1-t)
 !
@@ -78,10 +78,10 @@
       ENDDO cycAddRows
    ENDDO cycAddCols
    CALL LogSumDiff(na**2,vf1,vbf1,pl,bf1)
-   WRITE(*,*) "from 1 subtract", pl
-   CALL LogDiffExp(0.0d0,pl,xl)
-   xl = xl - pl1 - pl2
-   WRITE(*,*) "xl from D", xl
+!   WRITE(*,*) "from 1 subtract", pl
+!   CALL LogDiffExp(0.0d0,pl,xl)
+   xl = pl - pl1 - pl2
+   WRITE(*,'(A20,F12.7)') "xl from D", xl
 !
    RETURN
 !

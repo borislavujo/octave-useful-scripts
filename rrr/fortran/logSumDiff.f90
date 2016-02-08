@@ -159,7 +159,8 @@
 !
 ! -------------------------------------------------------------------
 !
-   DOUBLE PRECISION :: l, ll1, ll2
+   DOUBLE PRECISION :: l, ll1, ll2, ldd, lujo, lll
+   INTEGER i, faci
 !
 ! -------------------------------------------------------------------
 !
@@ -175,7 +176,28 @@
       ll2 = l2
    ENDIF
    l = ll2-ll1
-   ldif = ll1 + LOG(1+EXP(l))
+!   ldif = ll1 + LOG(1+EXP(l)) ... that was the mistake
+   IF (l.LT.-1e-5) THEN
+      ldif = ll1 + LOG(1-EXP(l))
+   ELSE
+!  numerically stable calculation
+      lll = LOG(-l)
+      ldif = lll
+      ldd = ldif
+      i = 1
+      faci = 1
+      DO WHILE(ldd.GT.-30)
+         i = i + 1
+         faci = faci * i
+         ldd = REAL(i)*lll-REAL(faci)
+         IF (MODULO(i,2).EQ.0) THEN
+            ldif = ldif + LOG(1-EXP(ldd-ldif))
+         ELSE
+            ldif = ldif + LOG(1+EXP(ldd-ldif))
+         ENDIF
+      ENDDO
+      ldif = ldif - ll1
+   ENDIF
 !
    RETURN
 !

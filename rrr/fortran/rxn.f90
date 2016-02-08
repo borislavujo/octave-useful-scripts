@@ -35,7 +35,7 @@
    DOUBLE PRECISION, DIMENSION(3*n) :: vtr
    LOGICAL :: btemp, bl
    LOGICAL, DIMENSION(3*n) :: vbtr
-   DOUBLE PRECISION, DIMENSION(9999,2) :: X ! max ratio of timescales = 2^(9999/(2^3))
+   DOUBLE PRECISION, DIMENSION(999,2) :: X ! max ratio of timescales = 2^(9999/(2^3))
    INTEGER :: sizeX, nind
 !   PARAMETER (howFine=3)
 !   PARAMETER (lstartdt = -6d0)
@@ -78,7 +78,7 @@
       vtemp(j) = pl
    ENDDO cycDiagRates
    lds = -MAXVAL(vtemp) + lstartdt - REAL(howFine)*LOG(2.0d0) ! - LOG(2.0d0)
-   WRITE(*,*) "lds", lds
+   WRITE(*,'(A8,F12.7)') "lds", lds
 !
 !  produce log transition matrix
 !
@@ -94,6 +94,7 @@
 !      vUjo(1) = pl
 !      vUjo(2) = Ls(j,j)
 !      CALL LogSumExp(2,vUjo,ltemp)
+!      WRITE(*,*) "ltemp", ltemp, "pl", pl
       Ls(j,j) = pl
    ENDDO cycTMCol
 !
@@ -113,6 +114,10 @@
          ENDIF
       ENDDO cycDoCols
    ENDDO cycDoRows
+   WRITE(*,*) "Ls, Ds, Nbs"
+   DO j=1,3
+      WRITE(*,'(6F12.7,3L3)') Ls(j,:), Ds(j,:), Nbs(j,:)
+   ENDDO
 !
 !  log transition matrices for dt = nFine*exp(lds)
 !
@@ -121,12 +126,16 @@
    D1 = Ds
    Nb1 = Nbs
    cycDoubling: DO i=1,howFine
-      WRITE(*,*) "which fine", i, "out of", howFine
-      CALL LPopul(n,L1,D1,Nb1,vpl,vba,xl)
+!      WRITE(*,*) "which fine", i, "out of", howFine
+!      CALL LPopul(n,L1,D1,Nb1,vpl,vba,xl)
       CALL MultLogMat(n,vpl,L1,D1,Nb1,L1,D1,Nb1,Ltem,Dtem,Nbtem)
       L1 = Ltem
       D1 = Dtem
       Nb1 = Nbtem
+      WRITE(*,*) "L1, D1, Nb1"
+      DO j=1,3
+         WRITE(*,'(6F10.4,3L3)') L1(j,:), D1(j,:), Nb1(j,:)
+      ENDDO
    ENDDO cycDoubling
    xl = 0
    X(1,1) = -99e9
@@ -134,18 +143,22 @@
    ldt = lds + REAL(howFine)*LOG(2.0d0)
    doldd = 1.0d1
    dmax = 1.0d1
-   nind = 2
+   nind = 1
 !
 !  main cycle
 !
    WRITE(*,*) "Main cycle"
    cycMain: DO WHILE( ((xl.GT.-5).OR.(doldd.GT.-3)) .AND.(dmax.GT.thresh))
       Dold = D1
-      WRITE(*,*) "L(1,1)", L1(1,1)
+!      WRITE(*,*) "L(1,1)", L1(1,1)
+      WRITE(*,*) "L1, D1, Nb1", nind
+      DO j=1,3
+         WRITE(*,'(6F12.7,3L3)') L1(j,:), D1(j,:), Nb1(j,:)
+      ENDDO
       CALL LPopul(n,L1,D1,Nb1,vpl,vba,xl)
       X(nind,1) = ldt
       X(nind,2) = xl
-      WRITE(*,*) nind, ldt, xl
+!      WRITE(*,*) nind, ldt, xl
       nind = nind + 1
       Lp = L1
       Dp = D1
@@ -156,7 +169,10 @@
          Lp = Ltem
          Dp = Dtem
          Nbp = Nbtem
-         WRITE(*,*) "L(1,1)", Lp(1,1)
+         WRITE(*,*) "Lp, Dp, Nbp", nind
+         DO j=1,3
+            WRITE(*,'(6F12.7,3L3)') Lp(j,:), Dp(j,:), Nbp(j,:)
+         ENDDO
          CALL LPopul(n,Lp,Dp,Nbp,vpl,vba,xl)
          vUjo(1) = ltnow
          vUjo(2) = lds
@@ -164,7 +180,7 @@
          ltnow = ltemp
          X(nind,1) = ltnow
          X(nind,2) = xl
-         WRITE(*,*) nind, ltnow, xl
+         WRITE(*,'(3A10,I6,2F12.7)') "nind", "ltnow", "xl", nind, ltnow, xl
          nind = nind + 1
       ENDDO cycLinProp
       CALL MultLogMat(n,vpl,L1,D1,Nb1,L1,D1,Nb1,Ltem,Dtem,Nbtem)
@@ -183,6 +199,7 @@
    CALL TrapzLog(nind,X,ltau)
 !   WRITE(*,*) "vypoctov", nind
    lkab = pl1 - ltau
+   WRITE(*,*) "lkab", lkab
    lkba = pl2 - ltau
 !
    RETURN
