@@ -66,6 +66,33 @@
          bPM = .TRUE.
       ENDIF
    ENDDO cycAddSub
+   IF (lSD-vL(vI(n)).GT.-1e6) THEN
+      RETURN
+   ENDIF
+!
+! if the result is zero, do the same in the reverse direction of sum
+!
+   lSD = vL(vI(n))
+   bPM = vbPM(vI(n))
+   cycAddRev: DO i=1,n-1
+      l0 = vL(vI(n-i))
+      b0 = vbPM(vI(n-i))
+      IF (b0.EQV.bPM) THEN
+         vUjo(1) = lSD
+         vUjo(2) = l0
+         CALL logSumExp(2,vUjo,lSD)
+      ELSE IF (lSD.GT.l0) THEN
+         CALL LogDiffExp(lSD,l0,l)
+         lSD = l
+      ELSE IF (l0.GT.lSD) THEN
+         CALL LogDiffExp(l0,lSD,l)
+         lSD = l
+         bPM = b0
+      ELSE
+         lSD = -99e9
+         bPM = .TRUE.
+      ENDIF
+   ENDDO cycAddRev
 !
    RETURN
 !

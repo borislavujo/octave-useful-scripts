@@ -27,7 +27,7 @@
 ! -------------------------------------------------------------------
 !
    INTEGER :: i, j, k
-   DOUBLE PRECISION :: pl, ltemp
+   DOUBLE PRECISION :: pl, ltemp, pl2
    DOUBLE PRECISION :: h
    INTEGER :: nind
    DOUBLE PRECISION, DIMENSION(n) :: vlnow
@@ -52,18 +52,26 @@
          CALL LogSumExp(n,vlnow,ltemp)
          L3(i,j) = ltemp
       ENDDO cycCalcColL3
+   ENDDO cycCalcRowL3
+!
+!  symmetrise L3
+!
+   cycDoRows: DO i=1,n-1
+      cycDoCols: DO j=i+1,n
+         vUjo(1) = L3(i,j)
+         vUjo(2) = L3(j,i)
+         CALL LogSumExp(2,vUjo,ltemp)
+         vUjo(1) = vpl(i)
+         vUjo(2) = vpl(j)
+         CALL LogSumExp(2,vUjo,pl)
+         L3(i,j) = vpl(i) + ltemp - pl
+         L3(j,i) = vpl(j) + ltemp - pl
+      ENDDO cycDoCols
+   ENDDO cycDoRows
 !
 !  normalise L3
 !
-
-!      cycCalcSumColL3: DO i=1,n
-!         vlnow = L3(i,j) ... this was the mistake
-!      ENDDO cycCalcSumColL3
-!      CALL LogSumExp(n,vlnow,ltemp)
-!      cycNormColL3: DO i=1,n
-!         L3(i,j) = L3(i,j) - ltemp
-!      ENDDO cycNormColL3
-
+   cycL3norm: DO j=1,n
       cycGetL3Trms: DO i=1,n
          vlnow(i) = L3(i,j)
       ENDDO cycGetL3Trms
@@ -71,9 +79,7 @@
       cycNormL3: DO i=1,n
          L3(i,j) = L3(i,j) - ltemp
       ENDDO cycNormL3
-
-
-   ENDDO cycCalcRowL3
+   ENDDO cycL3norm
 !
 !  calculate D3 AND Nb3
 !
@@ -88,7 +94,6 @@
                vbtr((k-1)*3+1) = Nb1(i,k)
                vbtr((k-1)*3+2) = Nb2(k,j)
                vbtr(k*3)       = Nb1(i,k).EQV.Nb2(k,j)
-!(Nb1(i,k).AND.Nb2(k,j)).OR. ((.NOT.Nb1(i,k)).AND.(.NOT.Nb2(k,j)))
             ENDDO cycFillvtr
             CALL LogSumDiff(3*n,vtr,vbtr,ltemp,btemp)
             Nb3(i,j) = btemp
@@ -105,21 +110,29 @@
          ENDIF
       ENDDO cycCalcColD3
    ENDDO cycCalcRowD3
-!   DO i=1,3
-!      WRITE(*,'(A10,3F12.7)') "beforenorm", D3(i,:)
-!      WRITE(*,'(A10,3L3)') "jak", Nbted(i,:)
-!   ENDDO
 !
 !  symmetrise D3
 !
    cycSymmD3Row: DO i=1,n
       cycSymmD3Col: DO j=1,n
-         D3(i,j) = 5.0d-1*(D3(i,j)+D3(j,i))
+         IF (D3(i,j).GT.D3(j,i)) THEN
+            Nb3(j,i) = Nb3(i,j)
+         ELSE
+            Nb3(i,j) = Nb3(j,i)
+         ENDIF
+         vUjo(1) = D3(i,j)
+         vUjo(2) = D3(j,i)
+         CALL LogSumExp(2,vUjo,pl)
+         D3(i,j) = pl - LOG(2.0d0)
          D3(j,i) = D3(i,j)
       ENDDO cycSymmD3Col
    ENDDO cycSymmD3Row
 !
-!  normalisation
+!  no normalisation
+!
+!   RETURN
+!
+!  normalise d3
 !
    cycNormCols: DO j=1,n
       cycGetTrms: DO i=1,n
@@ -128,24 +141,32 @@
          vbtr(i) = Nb3(i,j)
       ENDDO cycGetTrms
       CALL LogSumDiff(n,vtr,vbtr,pl,bl)
-!      WRITE(*,*) "D3 col before norm", j, "sum row", pl, "smerom", bl
-!      WRITE(*,*) "vtr", vtr(1:n), "vbtr", vbtr(1:n)
+      WRITE(*,*) "D3 col before norm", j, "sum row", pl, "smerom", bl
       cycDoTrms: DO i=1,n
-         vUjo(1) = MIN(pl,D3(i,j)-LOG(2.0d0))
+         vUjo(1) = MIN(pl-1.0e-2,D3(i,j)-1.0e-2)
 !         vUjo(1) = MIN(pl+vpl(i),D3(i,j)-1e-5)
          vUjo(2) = D3(i,j)
          vbUjo(1) = .NOT.bl
          vbUjo(2) = Nb3(i,j)
          CALL LogSumDiff(2,vujo,vbujo,ltemp,btemp)
-         D3(i,j) = ltemp
+!         D3(i,j) = ltemp
+         vlnow(i) = ltemp
       ENDDO cycDoTrms
       cycCheckTrms: DO i=1,n
-         vtr(i)  = D3(i,j)+vpl(i)
+!         vtr(i)  = D3(i,j)+vpl(i)
+         vtr(i)  = vlnow(i)+vpl(i)
          vbtr(i) = Nb3(i,j)
       ENDDO cycCheckTrms
-      CALL LogSumDiff(n,vtr,vbtr,pl,bl)
-!      WRITE(*,*) "D3 column", j, "sum row", pl, "smerom", bl
-!      WRITE(*,*) "vtr", vtr(1:n), "vbtr", vbtr(1:n)
+      CALL LogSumDiff(n,vtr,vbtr,pl2,bl)
+!
+!  i have no idea how this normalisation can make things worse
+!    correct D3 only if normalisation improves it
+!
+      IF (ABS(pl).GT.ABS(pl2)) THEN
+         DO i=1,n
+            D3(i,j) = vlnow(i)
+         ENDDO
+      ENDIF
    ENDDO cycNormCols
 !
    RETURN

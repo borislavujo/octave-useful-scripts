@@ -83,6 +83,13 @@
    xl = pl - pl1 - pl2
    WRITE(*,'(A20,F12.7)') "xl from D", xl
 !
+!
+!
+   IF (xl.GT.1e-8) THEN
+      WRITE(*,*) "Error: xl can only be negative"
+      STOP
+   ENDIF
+!
    RETURN
 !
 ! -------------------------------------------------------------------

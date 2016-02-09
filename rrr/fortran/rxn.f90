@@ -83,7 +83,7 @@
    ENDDO cycDiagRates
 !   WRITE(*,*) "vmaxes", vtemp
    lds = -MAXVAL(vtemp) + lstartdt - REAL(howFine)*LOG(2.0d0) ! - LOG(2.0d0)
-   WRITE(*,'(A8,F12.7)') "lds", lds
+   WRITE(*,'(A8,E20.7)') "lds", lds
 !
 !  produce log transition matrix
 !
@@ -185,7 +185,7 @@
          ltnow = ltemp
          vXdata1(nind) = ltnow
          vXdata2(nind) = xl
-         WRITE(*,'(3A10,I6,2F12.7)') "nind", "ltnow", "xl", nind, ltnow, xl
+         WRITE(*,'(3A10,I6,2E20.7)') "nind", "ltnow", "xl", nind, ltnow, xl
          nind = nind + 1
       ENDDO cycLinProp
       CALL MultLogMat(n,vpl,L1,D1,Nb1,L1,D1,Nb1,Ltem,Dtem,Nbtem)
