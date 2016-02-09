@@ -35,7 +35,7 @@
    DOUBLE PRECISION, DIMENSION(3*n) :: vtr
    LOGICAL :: btemp, bl
    LOGICAL, DIMENSION(3*n) :: vbtr
-   DOUBLE PRECISION, DIMENSION(999,2) :: X ! max ratio of timescales = 2^(9999/(2^3))
+   DOUBLE PRECISION, DIMENSION(9999) :: vXdata1, vXdata2 ! max ratio of timescales = 2^(9999/(2^3))
    INTEGER :: sizeX, nind
 !   PARAMETER (howFine=3)
 !   PARAMETER (lstartdt = -6d0)
@@ -53,6 +53,10 @@
    ENDDO cycNormvpl
    Kl = Kl0
    CALL SymmetriseRateMat(n,Kl,vpl)
+!   WRITE(*,*) "Symmetric Kl"
+!   DO i=1,3
+!      WRITE(*,*) Kl(i,1:3)
+!   ENDDO
 !
 !  calculate quilibrium populations
 !
@@ -77,6 +81,7 @@
       CALL LogSumExp(n,vlnow,pl)
       vtemp(j) = pl
    ENDDO cycDiagRates
+!   WRITE(*,*) "vmaxes", vtemp
    lds = -MAXVAL(vtemp) + lstartdt - REAL(howFine)*LOG(2.0d0) ! - LOG(2.0d0)
    WRITE(*,'(A8,F12.7)') "lds", lds
 !
@@ -114,10 +119,10 @@
          ENDIF
       ENDDO cycDoCols
    ENDDO cycDoRows
-   WRITE(*,*) "Ls, Ds, Nbs"
-   DO j=1,3
-      WRITE(*,'(6F12.7,3L3)') Ls(j,:), Ds(j,:), Nbs(j,:)
-   ENDDO
+!   WRITE(*,*) "Ls, Ds, Nbs"
+!   DO j=1,3
+!      WRITE(*,'(6F12.7,3L3)') Ls(j,:), Ds(j,:), Nbs(j,:)
+!   ENDDO
 !
 !  log transition matrices for dt = nFine*exp(lds)
 !
@@ -132,14 +137,14 @@
       L1 = Ltem
       D1 = Dtem
       Nb1 = Nbtem
-      WRITE(*,*) "L1, D1, Nb1"
-      DO j=1,3
-         WRITE(*,'(6F10.4,3L3)') L1(j,:), D1(j,:), Nb1(j,:)
-      ENDDO
+!      WRITE(*,*) "L1, D1, Nb1"
+!      DO j=1,3
+!         WRITE(*,'(6F12.7,3L3)') L1(j,:), D1(j,:), Nb1(j,:)
+!      ENDDO
    ENDDO cycDoubling
    xl = 0
-   X(1,1) = -99e9
-   X(1,2) = xl
+   vXdata1(1) = -99e9
+   vXdata2(1) = xl
    ldt = lds + REAL(howFine)*LOG(2.0d0)
    doldd = 1.0d1
    dmax = 1.0d1
@@ -151,13 +156,13 @@
    cycMain: DO WHILE( ((xl.GT.-5).OR.(doldd.GT.-3)) .AND.(dmax.GT.thresh))
       Dold = D1
 !      WRITE(*,*) "L(1,1)", L1(1,1)
-      WRITE(*,*) "L1, D1, Nb1", nind
-      DO j=1,3
-         WRITE(*,'(6F12.7,3L3)') L1(j,:), D1(j,:), Nb1(j,:)
-      ENDDO
+!      WRITE(*,*) "L1, D1, Nb1", nind
+!      DO j=1,3
+!         WRITE(*,'(6F12.7,3L3)') L1(j,:), D1(j,:), Nb1(j,:)
+!      ENDDO
       CALL LPopul(n,L1,D1,Nb1,vpl,vba,xl)
-      X(nind,1) = ldt
-      X(nind,2) = xl
+      vXdata1(nind) = ldt
+      vXdata2(nind) = xl
 !      WRITE(*,*) nind, ldt, xl
       nind = nind + 1
       Lp = L1
@@ -169,17 +174,17 @@
          Lp = Ltem
          Dp = Dtem
          Nbp = Nbtem
-         WRITE(*,*) "Lp, Dp, Nbp", nind
-         DO j=1,3
-            WRITE(*,'(6F12.7,3L3)') Lp(j,:), Dp(j,:), Nbp(j,:)
-         ENDDO
+!         WRITE(*,*) "Lp, Dp, Nbp", nind
+!         DO j=1,3
+!            WRITE(*,'(6F12.7,3L3)') Lp(j,:), Dp(j,:), Nbp(j,:)
+!         ENDDO
          CALL LPopul(n,Lp,Dp,Nbp,vpl,vba,xl)
          vUjo(1) = ltnow
          vUjo(2) = lds
          CALL LogSumExp(2,vUjo,ltemp)
          ltnow = ltemp
-         X(nind,1) = ltnow
-         X(nind,2) = xl
+         vXdata1(nind) = ltnow
+         vXdata2(nind) = xl
          WRITE(*,'(3A10,I6,2F12.7)') "nind", "ltnow", "xl", nind, ltnow, xl
          nind = nind + 1
       ENDDO cycLinProp
@@ -196,8 +201,9 @@
       doldd = LOG(SUM(ABS(D1-Dold)))
       dmax = MAXVAL(D1)
    ENDDO cycMain
-   CALL TrapzLog(nind,X,ltau)
+   CALL TrapzLog(nind-1,vXdata1,vXdata2,ltau)
 !   WRITE(*,*) "vypoctov", nind
+!   WRITE(*,*) "ltau", ltau
    lkab = pl1 - ltau
    WRITE(*,*) "lkab", lkab
    lkba = pl2 - ltau
@@ -262,7 +268,7 @@
 !
 !
 !
- SUBROUTINE TrapzLog(n,X,ltau)
+ SUBROUTINE TrapzLog(n,vX1,vX2,ltau)
 ! **********************************************************************
 ! *                                                                    *
 ! * Integrates a vector in log formalism usind trapezoidal ruel        *
@@ -277,7 +283,7 @@
 !
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: n
-   DOUBLE PRECISION, INTENT(IN), DIMENSION(n,2) :: X
+   DOUBLE PRECISION, INTENT(IN), DIMENSION(n) :: vX1, vX2
    DOUBLE PRECISION, INTENT(OUT) :: ltau
 !
 ! -------------------------------------------------------------------
@@ -288,18 +294,21 @@
 !
 ! -------------------------------------------------------------------
 !
+!   WRITE(*,*) "X"
    ltau = -9.9d99
    cycTrapez: DO i=1,n-1
-      CALL LogDiffExp(X(i+1,1),X(i,1),ldt)
-      vUjo(1) = X(i,2)
-      vUjo(2) = X(i+1,2)
+!      WRITE(*,'(4F12.7)') vX1(i), vX2(i), vX1(i+1), vX2(i+1)
+      CALL LogDiffExp(vX1(i+1),vX1(i),ldt)
+      vUjo(1) = vX2(i)
+      vUjo(2) = vX2(i+1)
       CALL LogSumExp(2,vUjo,pl)
       pl = pl - LOG(2.0d0)
       vUjo(1) = ltau
       vUjo(2) = ldt + pl
       CALL LogSumExp(2,vUjo,ltau)
-   ENDDO cycTrapez
-!
+!      WRITE(*,*) "ltau", ltau
+  ENDDO cycTrapez
+ !
    RETURN
 !
 ! -------------------------------------------------------------------

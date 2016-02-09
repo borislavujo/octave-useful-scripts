@@ -64,9 +64,9 @@
    CALL LogDiffExp(pl,pl1,xl)
    xl = xl - pl2
    WRITE(*,'(A20,F12.7)') "xl from L", xl
-!   IF (xl.GT.-3d0) THEN
-!      RETURN
-!   ENDIF
+   IF (xl.GT.-3d0) THEN
+      RETURN
+   ENDIF
 !
 !   get the population from log(1-t)
 !

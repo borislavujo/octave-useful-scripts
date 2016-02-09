@@ -55,13 +55,24 @@
 !
 !  normalise L3
 !
-      cycCalcSumColL3: DO i=1,n
-         vlnow = L3(i,j)
-      ENDDO cycCalcSumColL3
+
+!      cycCalcSumColL3: DO i=1,n
+!         vlnow = L3(i,j) ... this was the mistake
+!      ENDDO cycCalcSumColL3
+!      CALL LogSumExp(n,vlnow,ltemp)
+!      cycNormColL3: DO i=1,n
+!         L3(i,j) = L3(i,j) - ltemp
+!      ENDDO cycNormColL3
+
+      cycGetL3Trms: DO i=1,n
+         vlnow(i) = L3(i,j)
+      ENDDO cycGetL3Trms
       CALL LogSumExp(n,vlnow,ltemp)
-      cycNormColL3: DO i=1,n
+      cycNormL3: DO i=1,n
          L3(i,j) = L3(i,j) - ltemp
-      ENDDO cycNormColL3
+      ENDDO cycNormL3
+
+
    ENDDO cycCalcRowL3
 !
 !  calculate D3 AND Nb3
@@ -94,9 +105,19 @@
          ENDIF
       ENDDO cycCalcColD3
    ENDDO cycCalcRowD3
-   DO i=1,3
-      WRITE(*,'(A10,3F12.7)') "beforenorm", D3(i,:)
-   ENDDO
+!   DO i=1,3
+!      WRITE(*,'(A10,3F12.7)') "beforenorm", D3(i,:)
+!      WRITE(*,'(A10,3L3)') "jak", Nbted(i,:)
+!   ENDDO
+!
+!  symmetrise D3
+!
+   cycSymmD3Row: DO i=1,n
+      cycSymmD3Col: DO j=1,n
+         D3(i,j) = 5.0d-1*(D3(i,j)+D3(j,i))
+         D3(j,i) = D3(i,j)
+      ENDDO cycSymmD3Col
+   ENDDO cycSymmD3Row
 !
 !  normalisation
 !
@@ -125,13 +146,6 @@
       CALL LogSumDiff(n,vtr,vbtr,pl,bl)
 !      WRITE(*,*) "D3 column", j, "sum row", pl, "smerom", bl
 !      WRITE(*,*) "vtr", vtr(1:n), "vbtr", vbtr(1:n)
-      cycGetL3Trms: DO i=1,n
-         vlnow(i) = L3(i,j)
-      ENDDO cycGetL3Trms
-      CALL LogSumExp(n,vlnow,ltemp)
-      cycNormL3: DO i=1,n
-         L3(i,j) = L3(i,j) - ltemp
-      ENDDO cycNormL3
    ENDDO cycNormCols
 !
    RETURN
