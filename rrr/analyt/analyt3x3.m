@@ -3,6 +3,7 @@ function [lkab,lkba] = analyt3x3(Kl,vpl)
 vpl = vpl - logSumExp(vpl);
 % 0. get tst rate as an upper limit
 lkabtst = tstlog(Kl,vpl);
+lkabss = sslog(Kl,vpl);
 % 1. make state a the one of {1,2} having smaller rxn time with (3)
 if (Kl(1,3)<Kl(2,3))
   P = [0,1,0;1,0,0;0,0,1];
@@ -93,5 +94,5 @@ else
   vden = logSumDiff(Ujo);
 endif
 % 6. calculate the rate (add what was subtracted)
-lkab = min(ltac + vnum(1) - vden(1),lkabtst)
+lkab = max(min(ltac + vnum(1) - vden(1), lkabtst), lkabss)
 lkba = lkab + vpl(3) - logSumExp(vpl(1:2))
