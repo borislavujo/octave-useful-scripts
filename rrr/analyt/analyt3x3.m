@@ -20,7 +20,15 @@ ltbc = logSumExp([Kl(2,3);Kl(3,2)]);
 % 4. calculate the terms for numerator
 %pa^2 tab - pa^3 tab + pa pb tab - pa^2 pb tab + pa^2 tbc - pa^3 tbc + 2 pa pb tbc - 3 pa^2 pb tbc + pb^2 tbc - 3 pa pb^2 tbc - pb^3 tbc + pa pb tab tbc + pb^2 tab tbc - pa pb^2 tab tbc - pb^3 tab tbc
 %pa^2*tab - pa^3*tab + pa*pb*tab - pa^2*pb*tab + pb^2*tbc - pa^3*tbc + 2*pa*pb*tbc - 3*pa^2*pb*tbc + pb^2*tbc - 3*pa*pb^2*tbc - pb^3*tbc + pa*pb*tab*tbc + pb^2*tab*tbc - pa*pb^2*tab*tbc - pb^3*tab*tbc
-if (lpa>lpb)
+if(vpl(3)>-1)
+% (pa tab-pa^2 tab-pa tab tbc-pa^2 tab tbc) mpc+(tbc+tab tbc+2 pa tab tbc) mpc^2+(-tbc-tab tbc) mpc^3+O[mpc]^11
+  lmpc = subFrom1(vpl(3));
+  Mpc1 = [1,lpa + ltab; -1, 2*lpa + ltab; -1, lpa + ltab + ltbc; -1, 2*lpa + ltab + ltbc];
+  Mpc2 = [1,ltbc; +1, ltab + ltbc; +1, log(2) + lpa + ltab + ltbc];
+  Mpc3 = [-1,ltbc; -1, ltab + ltbc];
+  Ujo = [Mpc1(:,2)+lmpc, Mpc1(:,1); Mpc2(:,2)+2*lmpc, Mpc2(:,1); Mpc3(:,2)+3*lmpc, Mpc3(:,1)];
+  vnum = logSumDiff(Ujo);
+elseif (lpa>lpb)
 % put powers of pa together
   lmpa = subFrom1(lpa);
 %(-pb tbc-2 pb^2 tbc-pb^3 tbc+pb tab tbc-pb^3 tab tbc)+(tab+pb tab+tbc+4 pb tbc+3 pb^2 tbc-pb tab tbc+pb^2 tab tbc) mpa+(-2 tab-pb tab-2 tbc-3 pb tbc) mpa^2+(tab+tbc) mpa^3+O[mpa]^11
@@ -59,7 +67,15 @@ endif
 %vhod = vpref + vtab*ltab + vtbc*ltbc + vpa*lpa + vpb*lpb;
 %Ujo = [vhod,vppm]
 %vden = logSumDiff(Ujo)
-if (lpa>lpb)
+if(vpl(3)>-1)
+% (-pa+pa^2+pa tbc+pa^2 tbc)+(1-pa^2+tab-pa^2 tab-2 pa tbc-pa^2 tbc) mpc+(-1+pa-tab+pa tab+pa tbc) mpc^2+O[mpc]^11
+  lmpc = subFrom1(vpl(3));
+  Mpc0 = [-1,lpa;+1,2*lpa;+1,lpa + ltbc;+1,2*lpa + ltbc];
+  Mpc1 = [1,0;-1,2*lpa;+1,ltab;-1,2*lpa + ltab;-1,log(2) + lpa + ltbc;-1,2*lpa + ltbc];
+  Mpc2 = [-1,0;+1,lpa;-1,ltab;+1,lpa + ltab;+1,lpa + ltbc];
+  Ujo = [Mpc0(:,2), Mpc0(:,1); Mpc1(:,2)+lmpc, Mpc1(:,1); Mpc2(:,2)+2*lmpc, Mpc2(:,1)];
+  vden = logSumDiff(Ujo);
+elseif (lpa>lpb)
 % (-pb tbc+pb^2 tbc)+(-pb^2+tab-pb^2 tab+tbc-pb^2 tbc) mpa+(pb-tab+pb tab-tbc+pb tbc) mpa^2+O[mpa]^11
   lmpa = subFrom1(lpa);
   Mpa0 = [-1,lpb + ltbc;+1,2*lpb + ltbc];

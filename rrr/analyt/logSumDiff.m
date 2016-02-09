@@ -15,6 +15,7 @@ for i=2:size(Trms,1)
 %    error ('ina moznost predsa nie je kua')
   endif
 endfor
+%koniec = vsl
 %if (vsl(2) == 1) error('samfing is rottn'); endif % the code is done such that the result should be positive
 %sl = vsl(1);
 endfunction
