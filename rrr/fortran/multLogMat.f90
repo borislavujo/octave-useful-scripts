@@ -141,7 +141,7 @@
          vbtr(i) = Nb3(i,j)
       ENDDO cycGetTrms
       CALL LogSumDiff(n,vtr,vbtr,pl,bl)
-      WRITE(*,*) "D3 col before norm", j, "sum row", pl, "smerom", bl
+!      WRITE(*,*) "D3 col before norm", j, "sum row", pl, "smerom", bl
       cycDoTrms: DO i=1,n
          vUjo(1) = MIN(pl-1.0e-2,D3(i,j)-1.0e-2)
 !         vUjo(1) = MIN(pl+vpl(i),D3(i,j)-1e-5)
