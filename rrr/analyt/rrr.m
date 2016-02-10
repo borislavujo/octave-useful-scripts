@@ -39,11 +39,8 @@ function [vi,FEl,SSl,TSTl,NFl] = rrr(Kl,vpl,nDesiredStates,vObserv,maxThresh)
   endif
   [irow,icol,know] = maxNZ(min(Kl,Kl'));
   while and(nStates>nDesiredStates,know>maxThresh)
-    [Kl,vpln,vin]   = groupStates(Kl,vi,vpl,irow,icol,"nf"); % new decision matrix, assignment, and population vector
-    FEl  = groupStates(FEl,vi,vpl,irow,icol,"fe"); % fast-equilibrium B.C. rates
-    SSl  = groupStates(SSl,vi,vpl,irow,icol,"ss"); % steady state approx. rates
-    TSTl = groupStates(TSTl,vi,vpl,irow,icol,"ts"); % TST rates
-    NFl  = groupStates(NFl,vi,vpl,irow,icol,"nf"); % no-flux B.C. rates
+    [Kl,vpln,vin]   = groupStates(Kl,vi,vpl,irow,icol); % new decision matrix, assignment, and population vector
+    [TSTl,FEl,NFl,SSl]  = groupStatesAll(TSTl,FEl,NFl,SSl,vi,vpl,irow,icol); % fast-equilibrium B.C. rates
     [irow,icol,know] = maxNZ(min(Kl,Kl'))
     kTSl = TSTl(irow,icol)+rozdiel
     kFEl = FEl(irow,icol)+rozdiel
@@ -58,50 +55,94 @@ function [vi,FEl,SSl,TSTl,NFl] = rrr(Kl,vpl,nDesiredStates,vObserv,maxThresh)
   SSl += rozdiel;
 endfunction
 
-function [Kln,vpl,vi] = groupStates(Kl,vi,vpl,is1,is2,kType)
+function [TSTl,FEl,NFl,SSl]  = groupStatesAll(TSTl,FEl,NFl,SSl,vi,vpl,is1,is2)
 % rate matrix reduction by 1 state
+% all types of rate definitions
+  nic = -9e9;
+%  TSTln = TSTl; FEln = FEl; NFln = NFl; SSln = SSl;
+% is1 will be the index after the rearrangement
+  is12 = min(is1,is2); is2 = max(is1,is2); is1 = is12;
+% for FEl all will change
+  vFElis1j = FEl(is1,:); vFEljis1 = FEl(:,is1);
+  vFElis2j = FEl(is2,:); vFEljis2 = FEl(:,is2);
+% first find neighbours - they must be the same for all matrices -> use TST matrix
+% neighbours of is1 except is2
+  vil1 = setdiff(intersect(find(TSTl(is1,:)>-1e8),find(TSTl(is1,:))),[is1,is2]);
+%  vTSTis1jrates = TSTl(is1,vil1)
+%  vFEis1jrates = vFElis1j([is2,vil1])
+%  vFEjis1rates = vFEljis1([is2,vil1])
+% neighbours of is2 except is1
+  vil2 = setdiff(intersect(find(TSTl(is2,:)>-1e8),find(TSTl(is2,:))),[is1,is2]);
+%  vFEis2jrates = vFElis2j([is1,vil2])
+%  vFEjis2rates = vFEljis2([is1,vil2])
+  vnei = unique([vil1,vil2]);
+  [nnj,nj] = size(vnei); % if both are 
+  if or(nj==0,nnj==0)
+    there_were_no_neighbours_wtf = [is1, is2]
+  else
+    for j=vnei
+      vpj = [vpl(is1);vpl(is2);vpl(j)]; vpj = vpj - logSumExp(vpj); % vector of 3 eq. popul.; normalis can make something 0
+% do TST first
+%      ktyp = "tst"
+      TSTij = [nic,           TSTl(is1,is2), TSTl(is1,j);
+	       TSTl(is2,is1),           nic, TSTl(is2,j);
+	       TSTl(  j,is1), TSTl(  j,is2),        nic];
+      [tstlkab,tstlkba] = tstlog(TSTij,vpj)
+      TSTl(is1,j) = tstlkab; TSTl(j,is1) = tstlkba;
+% NF
+%      ktyp = "nf"
+      NFij = [nic,          NFl(is1,is2), NFl(is1,j);
+	      NFl(is2,is1),          nic, NFl(is2,j);
+	      NFl(  j,is1), NFl(  j,is2),       nic];
+      [nflkab,nflkba] = analyt3x3(NFij,vpj)
+      NFl(is1,j) = nflkab; NFl(j,is1) = nflkba;
+% FE
+%      ktyp = "fe"
+      FEij = [nic,           vFElis1j(is2), vFElis1j(j);
+	      vFElis2j(is1),           nic, vFElis2j(j);
+	        vFEljis1(j),   vFEljis2(j),       nic];
+      vil1j = setdiff(vil1,j); [nun1,nun2] = size(vil1j); 
+      if (nun1*nun2>0) kDAl = logSumExp(vFEljis1(vil1j)) else kDAl = nic; endif
+      vil2j = setdiff(vil2,j); [nun1,nun2] = size(vil2j); 
+      if (nun1*nun2>0) kDBl = logSumExp(vFEljis2(vil2j)) else kDBl = nic; endif
+      sumflux = logSumExp([vpj(1)+kDAl;vpj(2)+kDBl]);
+      f1l = vpj(1)+kDAl-sumflux;
+      f2l = vpj(2)+kDBl-sumflux;
+      FEij(1,2) = logSumExp([FEij(1,2);kDBl+f1l]);
+      FEij(2,1) = logSumExp([FEij(2,1);kDAl+f2l]);
+      [felkab,felkba] = analyt3x3(FEij,vpj)
+      FEl(is1,j) = felkab; FEl(j,is1) = felkba;
+% SS
+%      ktyp = "ss"
+      SSij = [nic,          SSl(is1,is2), SSl(is1,j);
+	      SSl(is2,is1),          nic, SSl(is2,j);
+	      SSl(  j,is1), SSl(  j,is2),       nic];
+      [sslkab,sslkba] = sslog(SSij,vpj)
+      SSl(is1,j) = sslkab; SSl(j,is1) = sslkba;
+    endfor
+    Porovn = [TSTl(is1,vnei)',FEl(is1,vnei)',NFl(is1,vnei)',SSl(is1,vnei)']
+  endif
+  TSTl(is2,:) = []; TSTl(:,is2) = [];
+  FEl(is2,:) = []; FEl(:,is2) = [];
+  NFl(is2,:) = []; NFl(:,is2) = [];
+  SSl(is2,:) = []; SSl(:,is2) = [];
+endfunction
+
+function [Kln,vpl,vi] = groupStates(Kl,vi,vpl,is1,is2)
+% rate matrix reduction by 1 state
+% the decision matrix only
   malo = -9e9;
   is12 = min(is1,is2); is2 = max(is1,is2); is1 = is12;
   R12 = Kl(is1,is2); R21 = Kl(is2,is1);
   Kln = Kl; % new matrix is created, so that the gradual modifications do not affect
-  Kl(is1,is2) = malo; Kl(is2,is1) = malo; Kl(is1,is1) = malo; Kl(is2,is2) = malo; % delete rates between s1 and s2, so they do not appear among neighbours
-%  Kl(is1,find(Kl(is1,:)<-1e5))=0; Kl(is2,find(Kl(is2,:)<-1e5))=0; Kl(find(Kl(:,is1)<-1e5),is1)=0; Kl(find(Kl(:,is2)<-1e5),is1)=0; % discard too small rates
-  vnei = unique([intersect(find(Kl(is1,:)>-1e8),find(Kl(is1,:))),intersect(find(Kl(is2,:)>-1e8),find(Kl(is2,:)))]); % find all the neighbours of s1 and s2
+  Kl(is1,is2) = malo; Kl(is2,is1) = malo; Kl(is1,is1) = malo; Kl(is2,is2) = malo;
+  vnei = unique([intersect(find(Kl(is1,:)>-1e8),find(Kl(is1,:))),intersect(find(Kl(is2,:)>-1e8),find(Kl(is2,:)))]);
   [nnj,nj] = size(vnei)
   if and(nj>0,nnj>0)
     for j=vnei
       vpj = [vpl(is1);vpl(is2);vpl(j)]; vpj = vpj - logSumExp(vpj); % vector of 3 eq. popul.
       Kij = [malo,R12,Kl(is1,j);R21,malo,Kl(is2,j);Kl(j,is1),Kl(j,is2),malo]; % 3x3 log rate matrix
-%      if (max(max(Kij))-min(min(Kij))>1e3)
-%	davame = kType
-%	betweenObserv = [is1, is2, j];
-%	[kab,kba] = tstlog(Kij,vpj);
-      if (prod(kType=="fe")==1)
-	davame = [kType, "fe"]
-	vKl1 = Kl(:,is1); vKl1(is2) = malo; vKl1(j) = malo; vKl1 = full(vKl1(find(vKl1>-1e8))); kADl = logSumExp(vKl1); % adding the equilibration through the neighbours
-	vKl2 = Kl(:,is2); vKl2(is1) = malo; vKl2(j) = malo; vKl2 = full(vKl2(find(vKl2>-1e8))); kBDl = logSumExp(vKl2);
-	sumflux = logSumExp([vpl(1)+kADl;vpl(2)+kBDl]); 
-	f1l = vpl(1)+kADl-sumflux; 
-	f2l = vpl(2)+kBDl-sumflux; 
-	Kij(1,2) = logSumExp([Kij(1,2);kBDl+f1l]);
-	Kij(2,1) = logSumExp([Kij(2,1);kADl+f2l]);
-	[kab,kba] = analyt3x3(Kij,vpj);
-      elseif (prod(kType=="nf")==1)
-	davame = [kType, "nf"]
-	[kab,kba] = analyt3x3(Kij,vpj);
-      elseif (prod(kType=="ss")==1)
-	davame = [kType, "ss"]
-	[kab,kba] = sslog(Kij,vpj);
-      else
-	vdavame = kType
-	[kab,kba] = tstlog(Kij,vpj);
-      endif
-      if (kab>1e3)
-	UkazKij = Kij
-	vukazpl = vpj
-	ukazkab = kab
-	ukazkba = kba
-      endif
+      [kab,kba] = analyt3x3(Kij,vpj);
       Kln(is1,j) = kab;
       Kln(j,is1) = kba;
     endfor
@@ -114,3 +155,4 @@ function [Kln,vpl,vi] = groupStates(Kl,vi,vpl,is1,is2,kType)
     vi(find(vi>=is2))--; % deleting s2, R became smaller -> decrement all indices>=is2
   endif
 endfunction
+

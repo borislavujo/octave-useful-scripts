@@ -25,7 +25,7 @@ fl22 = Kl(3,2);
 fl2 = logSumExp([fl21;fl22]);
 tel2 = pl2 - fl2; % log exit time from state 2
 
-kbal = -max(tel1,tel2) % 1/longer time is the lowest possible rate constant from (1+2) to 3
-kabl = kbal+ppl12-ppl3 % detailed balance is satisfied
+kbal = -max(tel1,tel2); % 1/longer time is the lowest possible rate constant from (1+2) to 3
+kabl = kbal+ppl12-ppl3; % detailed balance is satisfied
 %kabtst = tstlog(Kl,vpl);
 %tstss = exp(kabtst-kabl)

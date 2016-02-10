@@ -23,7 +23,7 @@ ltbc = logSumExp([Kl(2,3);Kl(3,2)]);
 %pa^2*tab - pa^3*tab + pa*pb*tab - pa^2*pb*tab + pb^2*tbc - pa^3*tbc + 2*pa*pb*tbc - 3*pa^2*pb*tbc + pb^2*tbc - 3*pa*pb^2*tbc - pb^3*tbc + pa*pb*tab*tbc + pb^2*tab*tbc - pa*pb^2*tab*tbc - pb^3*tab*tbc
 if(vpl(3)>-1)
 % (pa tab-pa^2 tab-pa tab tbc-pa^2 tab tbc) mpc+(tbc+tab tbc+2 pa tab tbc) mpc^2+(-tbc-tab tbc) mpc^3+O[mpc]^11
-  lmpc = subFrom1(vpl(3));
+  lmpc = logSumExp(vpl(1:2));
   Mpc1 = [1,lpa + ltab; -1, 2*lpa + ltab; -1, lpa + ltab + ltbc; -1, 2*lpa + ltab + ltbc];
   Mpc2 = [1,ltbc; +1, ltab + ltbc; +1, log(2) + lpa + ltab + ltbc];
   Mpc3 = [-1,ltbc; -1, ltab + ltbc];
@@ -31,7 +31,7 @@ if(vpl(3)>-1)
   vnum = logSumDiff(Ujo);
 elseif (lpa>lpb)
 % put powers of pa together
-  lmpa = subFrom1(lpa);
+  lmpa = logSumExp(vpl(2:3));
 %(-pb tbc-2 pb^2 tbc-pb^3 tbc+pb tab tbc-pb^3 tab tbc)+(tab+pb tab+tbc+4 pb tbc+3 pb^2 tbc-pb tab tbc+pb^2 tab tbc) mpa+(-2 tab-pb tab-2 tbc-3 pb tbc) mpa^2+(tab+tbc) mpa^3+O[mpa]^11
   Mpa0 = [-1, lpb + ltbc; -1, log(2) + 2 * lpb + ltbc; -1, 3 * lpb + ltbc; +1, lpb + ltab + ltbc; -1, 3 * lpb + ltab + ltbc];
   Mpa1 = [+1, ltab; +1, lpb + ltab; +1, ltbc; +1, log(4) + lpb + ltbc; +1, log(3) + 2*lpb + ltbc; -1, lpb + ltab + ltbc; +1, 2*lpb + ltab + ltbc];
@@ -50,7 +50,7 @@ elseif (lpa>lpb)
 %vnum = logSumDiff(Ujo)
 else
 % (pa tab-pa^3 tab-pa tbc-2 pa^2 tbc-pa^3 tbc)+(-pa tab+pa^2 tab+tbc+4 pa tbc+3 pa^2 tbc+tab tbc+pa tab tbc) mpb+(-2 tbc-3 pa tbc-2 tab tbc-pa tab tbc) mpb^2+(tbc+tab tbc) mpb^3+O[mpb]^11
-  lmpb = subFrom1(lpb);
+  lmpb = logSumExp(vpl([1;3]));
   Mpb0 = [1,lpa + ltab;-1,3*lpa + ltab;-1,lpa + ltbc;-1,log(2) + 2*lpa + ltbc;-1,3*lpa + ltbc];
   Mpb1 = [-1,lpa + ltab;+1,2*lpa + ltab;+1,ltbc;+1,log(4) + lpa + ltbc;+1,log(3) + 2*lpa + ltbc;+1,ltab + ltbc;+1,lpa + ltab + ltbc];
   Mpb2 = [-1,log(2) + ltbc;-1,log(3) + lpa + ltbc;-1,log(2) + ltab + ltbc;-1,lpa + ltab + ltbc];
@@ -70,7 +70,7 @@ endif
 %vden = logSumDiff(Ujo)
 if(vpl(3)>-1)
 % (-pa+pa^2+pa tbc+pa^2 tbc)+(1-pa^2+tab-pa^2 tab-2 pa tbc-pa^2 tbc) mpc+(-1+pa-tab+pa tab+pa tbc) mpc^2+O[mpc]^11
-  lmpc = subFrom1(vpl(3));
+  lmpc = logSumExp(vpl(1:2));
   Mpc0 = [-1,lpa;+1,2*lpa;+1,lpa + ltbc;+1,2*lpa + ltbc];
   Mpc1 = [1,0;-1,2*lpa;+1,ltab;-1,2*lpa + ltab;-1,log(2) + lpa + ltbc;-1,2*lpa + ltbc];
   Mpc2 = [-1,0;+1,lpa;-1,ltab;+1,lpa + ltab;+1,lpa + ltbc];
@@ -78,7 +78,7 @@ if(vpl(3)>-1)
   vden = logSumDiff(Ujo);
 elseif (lpa>lpb)
 % (-pb tbc+pb^2 tbc)+(-pb^2+tab-pb^2 tab+tbc-pb^2 tbc) mpa+(pb-tab+pb tab-tbc+pb tbc) mpa^2+O[mpa]^11
-  lmpa = subFrom1(lpa);
+  lmpa = logSumExp(vpl(2:3));
   Mpa0 = [-1,lpb + ltbc;+1,2*lpb + ltbc];
   Mpa1 = [-1,2*lpb;+1,ltab;-1,2*lpb + ltab;+1,ltbc;-1,2*lpb + ltbc];
   Mpa2 = [1,lpb;-1,ltab;+1,lpb + ltab;-1,ltbc;+1,lpb + ltbc];
@@ -86,7 +86,7 @@ elseif (lpa>lpb)
   vden = logSumDiff(Ujo);
 else
 % (-pa+pa^2)+(1-pa^2+tab-pa^2 tab-pa^2 tbc) mpb+(-1+pa-tab+pa tab+pa tbc) mpb^2+O[mpb]^11
-  lmpb = subFrom1(lpb);
+  lmpb = logSumExp(vpl([1;3]));
   Mpb0 = [-1,lpa;+1,2*lpa];
   Mpb1 = [1,0;-1,2*lpa;+1,ltab;-1,2*lpa + ltab;-1,2*lpa + ltbc];
   Mpb2 = [-1,0;+1,lpa;-1,ltab;+1,lpa + ltab;+1,lpa + ltbc];
@@ -106,4 +106,4 @@ elseif (lkab<lkabss)
   Kl = Kl
   vpl = vpl
 endif
-lkba = lkab + vpl(3) - logSumExp(vpl(1:2))
+lkba = lkab + vpl(3) - logSumExp(vpl(1:2));
