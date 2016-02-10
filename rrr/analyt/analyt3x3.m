@@ -94,5 +94,16 @@ else
   vden = logSumDiff(Ujo);
 endif
 % 6. calculate the rate (add what was subtracted)
-lkab = max(min(ltac + vnum(1) - vden(1), lkabtst), lkabss)
+lkab = ltac + vnum(1) - vden(1);
+if (lkab>lkabtst)
+  prilisvelkalkab = lkab
+  lkab = lkabtst
+  Kl = Kl
+  vpl = vpl
+elseif (lkab<lkabss)
+  prilismalalkab = lkab
+  lkab = lkabss
+  Kl = Kl
+  vpl = vpl
+endif
 lkba = lkab + vpl(3) - logSumExp(vpl(1:2))
