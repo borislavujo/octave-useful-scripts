@@ -64,9 +64,9 @@
    CALL LogDiffExp(pl,pl1,xl)
    xl = xl - pl2
    WRITE(*,'(A20,F12.7)') "xl from L", xl
-   IF (xl.GT.-3d0) THEN
-      RETURN
-   ENDIF
+!   IF (xl.GT.-3d0) THEN
+ !     RETURN
+  ! ENDIF
 !
 !   get the population from log(1-t)
 !
@@ -87,6 +87,17 @@
 !
    IF (xl.GT.1e-8) THEN
       WRITE(*,*) "Error: xl can only be negative"
+      OPEN(UNIT=999,STATUS='NEW',FILE='Dlast')
+      OPEN(UNIT=998,STATUS='NEW',FILE='Llast')
+      OPEN(UNIT=997,STATUS='NEW',FILE='Nblast')
+      DO i=1,n
+         WRITE(999,*) D(i,:)
+         WRITE(998,*) L(i,:)
+         WRITE(997,*) Nb(i,:)
+      ENDDO
+      CLOSE(999)
+      CLOSE(998)
+      CLOSE(997)
       STOP
    ENDIF
 !

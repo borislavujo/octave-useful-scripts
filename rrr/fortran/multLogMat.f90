@@ -9,11 +9,12 @@
 ! **********************************************************************
 ! *                                                                    *
 ! * Author:     Boris Fackovec                                         *
-! * Date:       03/02/2016                                             *
-! * Version:    1.1                                                    *
+! * Date:       11/02/2016                                             *
+! * Version:    1.2                                                    *
 ! *                                                                    *
 ! **********************************************************************
 !
+   USE ParamsRXN, ONLY: ln2
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: n
    DOUBLE PRECISION, INTENT(IN), DIMENSION(n) :: vpl
@@ -27,10 +28,10 @@
 ! -------------------------------------------------------------------
 !
    INTEGER :: i, j, k
-   DOUBLE PRECISION :: pl, ltemp, pl2
+   DOUBLE PRECISION :: pl, ltemp, pl2, pplus, pminus
    DOUBLE PRECISION :: h
-   INTEGER :: nind
-   DOUBLE PRECISION, DIMENSION(n) :: vlnow
+   INTEGER :: nind, nplus, nminus
+   DOUBLE PRECISION, DIMENSION(n) :: vlnow, vplus, vminus
    DOUBLE PRECISION, DIMENSION(2) :: vUjo
    DOUBLE PRECISION, DIMENSION(3*n) :: vtr
    LOGICAL :: btemp, bl
@@ -86,7 +87,6 @@
    cycCalcRowD3: DO i=1,n
       cycCalcColD3: DO j=1,n
          IF (L3(i,j)-vpl(i).GT.h) THEN
-            Nbted(i,j) = .TRUE.
             cycFillvtr: DO k=1,n
                vtr((k-1)*3+1)  = vpl(k) + D1(i,k)
                vtr((k-1)*3+2)  = vpl(k)           + D2(k,j)
@@ -99,13 +99,16 @@
             Nb3(i,j) = btemp
             D3(i,j) = ltemp
          ELSE
-            Nbted = .FALSE.
             IF (L3(i,j).GT.vpl(i)) THEN
                Nb3(i,j) = .TRUE.
-               D3(i,j) = LOG(EXP(L3(i,j)-vpl(i))-1)
+!               D3(i,j) = LOG(EXP(L3(i,j)-vpl(i))-1)
+               CALL LogDiffExp(L3(i,j)-vpl(i),0.0d0,pl)
+               D3(i,j) = pl
             ELSE
                Nb3(i,j) = .FALSE.
-               D3(i,j) = LOG(1-EXP(L3(i,j)-vpl(i)))
+!               D3(i,j) = LOG(1-EXP(L3(i,j)-vpl(i)))
+               CALL LogDiffExp(0.0d0,L3(i,j)-vpl(i),pl)
+               D3(i,j) = pl
             ENDIF
          ENDIF
       ENDDO cycCalcColD3
@@ -123,37 +126,58 @@
          vUjo(1) = D3(i,j)
          vUjo(2) = D3(j,i)
          CALL LogSumExp(2,vUjo,pl)
-         D3(i,j) = pl - LOG(2.0d0)
+         D3(i,j) = pl - ln2
          D3(j,i) = D3(i,j)
       ENDDO cycSymmD3Col
    ENDDO cycSymmD3Row
 !
-!  no normalisation
-!
-!   RETURN
-!
 !  normalise d3
 !
    cycNormCols: DO j=1,n
+      nplus = 0
+      nminus = 0
       cycGetTrms: DO i=1,n
          vtr(i)  = D3(i,j)+vpl(i)
 !         vtr(i)  = D3(i,j) ... this was the mistake
          vbtr(i) = Nb3(i,j)
+         IF (Nb3(i,j)) THEN
+            nplus = nplus+1
+            vplus(nplus) = vtr(i)
+         ELSE
+            nminus = nminus+1
+            vminus(nminus) = vtr(i)
+         ENDIF
       ENDDO cycGetTrms
       CALL LogSumDiff(n,vtr,vbtr,pl,bl)
+      IF (nplus.GT.0) THEN
+         CALL LogSumExp(nplus,vplus,pplus)
+      ELSE
+         pplus = -99e9
+         WRITE(*,*) "warning: no positive terms"
+      ENDIF
+      IF (nminus.GT.0) THEN
+         CALL LogSumExp(nminus,vminus,pminus)
+      ELSE
+         pplus = -99e9
+         WRITE(*,*) "warning: no positive terms"
+      ENDIF
+      cycNormD3: DO i=1,n
+         
 !      WRITE(*,*) "D3 col before norm", j, "sum row", pl, "smerom", bl
-      cycDoTrms: DO i=1,n
-         vUjo(1) = MIN(pl-1.0e-2,D3(i,j)-1.0e-2)
+!      cycDoTrms: DO i=1,n
+!         vUjo(1) = MIN(pl-1.0e-2,D3(i,j)-1.0e-2)
 !         vUjo(1) = MIN(pl+vpl(i),D3(i,j)-1e-5)
-         vUjo(2) = D3(i,j)
-         vbUjo(1) = .NOT.bl
-         vbUjo(2) = Nb3(i,j)
-         CALL LogSumDiff(2,vujo,vbujo,ltemp,btemp)
+!         vUjo(2) = D3(i,j)
+!         vbUjo(1) = .NOT.bl
+!         vbUjo(2) = Nb3(i,j)
+!         CALL LogSumDiff(2,vujo,vbujo,ltemp,btemp)
 !         D3(i,j) = ltemp
-         vlnow(i) = ltemp
-      ENDDO cycDoTrms
+!         vlnow(i) = ltemp
+         IF (Nb3(i,j).EQV.bl) THEN
+            D3(i,j) = D3(i,j) - ABS(pplus-pminus)
+         ENDIF
+      ENDDO cycNormD3
       cycCheckTrms: DO i=1,n
-!         vtr(i)  = D3(i,j)+vpl(i)
          vtr(i)  = vlnow(i)+vpl(i)
          vbtr(i) = Nb3(i,j)
       ENDDO cycCheckTrms

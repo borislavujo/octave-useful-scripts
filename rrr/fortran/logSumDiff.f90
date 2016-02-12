@@ -110,8 +110,8 @@
 ! **********************************************************************
 ! *                                                                    *
 ! * Author:     Boris Fackovec                                         *
-! * Date:       21/01/2016                                             *
-! * Version:    1.0                                                    *
+! * Date:       11/02/2016                                             *
+! * Version:    1.1                                                    *
 ! *                                                                    *
 ! **********************************************************************
 !
@@ -124,7 +124,7 @@
 ! -------------------------------------------------------------------
 !
    INTEGER :: i
-   DOUBLE PRECISION :: l, ujo
+   DOUBLE PRECISION :: l
    DOUBLE PRECISION, DIMENSION(n) :: vLT
 !
 ! -------------------------------------------------------------------
@@ -140,21 +140,16 @@
    ENDIF
 !
    vLT = vL
-!   WRITE(*,*) vLT
    CALL REFSOR(vLT)
-!   WRITE(*,*) vLT
-!   STOP
 !
 !  now start adding from the smallest term to the largest
 !
    lSE = vLT(1)
    cycInds: DO i=2,n
       l = vLT(i)
-      ujo = LOG(1.0d0+EXP(lSE-l))
-!      WRITE(*,*) "l", l, "ujo", ujo
-      lSE = l + ujo
+      lSE = l + LOG(1.0d0+EXP(lSE-l))
    ENDDO cycInds
-!   STOP
+!
 !  a few orders expression for small values of lSE-l could be used
 !  in order to speed up the calculation
 !
