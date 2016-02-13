@@ -112,39 +112,6 @@
    DO i=1,n
       WRITE(*,*) Nbted(i,:)
    ENDDO
-   WRITE(*,*) "before symmetris"
-   DO i=1,n
-      WRITE(*,*) D3(i,:)
-   ENDDO
-   WRITE(*,*) "N"
-   DO i=1,n
-      WRITE(*,*) Nb3(i,:)
-   ENDDO
-!
-!  symmetrise D3
-!
-   Ddif = D3
-   cycSymmD3Row: DO i=1,n
-      cycSymmD3Col: DO j=1,n
-         IF (D3(i,j).GT.D3(j,i)) THEN
-            Nb3(j,i) = Nb3(i,j)
-         ELSE
-            Nb3(i,j) = Nb3(j,i)
-         ENDIF
-         vUjo(1) = D3(i,j)
-         vUjo(2) = D3(j,i)
-         CALL LogSumExp(2,vUjo,pl)
-         D3(i,j) = pl - ln2
-         D3(j,i) = D3(i,j)
-      ENDDO cycSymmD3Col
-   ENDDO cycSymmD3Row
-!
-!  normalise d3
-!
-   WRITE(*,*) "symmetris difference", MAXVAL(ABS(D3-Ddif))
-   DO i=1,n
-      WRITE(*,*) D3(i,:)-Ddif(i,:)
-   ENDDO
    WRITE(*,*) "before normalis"
    DO i=1,n
       WRITE(*,*) D3(i,:)
@@ -153,6 +120,9 @@
    DO i=1,n
       WRITE(*,*) Nb3(i,:)
    ENDDO
+!
+!  normalise d3
+!
    Ddif = D3
    cycNormCols: DO j=1,n
       nplus = 0
@@ -222,6 +192,36 @@
       WRITE(*,*) D3(i,:)-Ddif(i,:)
    ENDDO
    WRITE(*,*) "after normalis"
+   DO i=1,n
+      WRITE(*,*) D3(i,:)
+   ENDDO
+   WRITE(*,*) "N"
+   DO i=1,n
+      WRITE(*,*) Nb3(i,:)
+   ENDDO
+!
+!  symmetrise D3
+!
+   Ddif = D3
+   cycSymmD3Row: DO i=1,n
+      cycSymmD3Col: DO j=1,n
+         IF (D3(i,j).GT.D3(j,i)) THEN
+            Nb3(j,i) = Nb3(i,j)
+         ELSE
+            Nb3(i,j) = Nb3(j,i)
+         ENDIF
+         vUjo(1) = D3(i,j)
+         vUjo(2) = D3(j,i)
+         CALL LogSumExp(2,vUjo,pl)
+         D3(i,j) = pl - ln2
+         D3(j,i) = D3(i,j)
+      ENDDO cycSymmD3Col
+   ENDDO cycSymmD3Row
+   WRITE(*,*) "symmetris difference", MAXVAL(ABS(D3-Ddif))
+   DO i=1,n
+      WRITE(*,*) D3(i,:)-Ddif(i,:)
+   ENDDO
+   WRITE(*,*) "after symmetris"
    DO i=1,n
       WRITE(*,*) D3(i,:)
    ENDDO
