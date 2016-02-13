@@ -31,6 +31,7 @@
    DOUBLE PRECISION :: pl, ltemp, pl2, pplus, pminus
    INTEGER :: nind, nplus, nminus
    DOUBLE PRECISION, DIMENSION(n) :: vlnow, vplus, vminus
+   DOUBLE PRECISION, DIMENSION(n,n) :: Ddif
    DOUBLE PRECISION, DIMENSION(2) :: vUjo
    DOUBLE PRECISION, DIMENSION(3*n) :: vtr
    LOGICAL :: btemp, bl
@@ -122,6 +123,7 @@
 !
 !  symmetrise D3
 !
+   Ddif = D3
    cycSymmD3Row: DO i=1,n
       cycSymmD3Col: DO j=1,n
          IF (D3(i,j).GT.D3(j,i)) THEN
@@ -139,6 +141,10 @@
 !
 !  normalise d3
 !
+   WRITE(*,*) "symmetris difference"
+   DO i=1,n
+      WRITE(*,*) D3(i,:)-Ddif(i,:)
+   ENDDO
    WRITE(*,*) "before normalis"
    DO i=1,n
       WRITE(*,*) D3(i,:)
@@ -147,6 +153,7 @@
    DO i=1,n
       WRITE(*,*) Nb3(i,:)
    ENDDO
+   Ddif = D3
    cycNormCols: DO j=1,n
       nplus = 0
       nminus = 0
@@ -210,6 +217,10 @@
          ENDDO
       ENDIF
    ENDDO cycNormCols
+   WRITE(*,*) "normalisation difference"
+   DO i=1,n
+      WRITE(*,*) D3(i,:)-Ddif(i,:)
+   ENDDO
    WRITE(*,*) "after normalis"
    DO i=1,n
       WRITE(*,*) D3(i,:)
