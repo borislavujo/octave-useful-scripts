@@ -14,7 +14,7 @@
 ! *                                                                    *
 ! **********************************************************************
 !
-   USE ParamsRXN, ONLY: ln2
+   USE ParamsRXN, ONLY: ln2, h
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: n
    DOUBLE PRECISION, INTENT(IN), DIMENSION(n) :: vpl
@@ -29,7 +29,6 @@
 !
    INTEGER :: i, j, k
    DOUBLE PRECISION :: pl, ltemp, pl2, pplus, pminus
-   DOUBLE PRECISION :: h
    INTEGER :: nind, nplus, nminus
    DOUBLE PRECISION, DIMENSION(n) :: vlnow, vplus, vminus
    DOUBLE PRECISION, DIMENSION(2) :: vUjo
@@ -38,7 +37,6 @@
    LOGICAL, DIMENSION(3*n) :: vbtr
    LOGICAL, DIMENSION(2) :: vbUjo
    LOGICAL, DIMENSION(n,n) :: Nbted
-   PARAMETER (h=-3.0d0)
 !
 ! -------------------------------------------------------------------
 !
@@ -105,17 +103,7 @@
             D3(i,j) = ltemp
          ELSE
             Nbted(i,j) = .FALSE.
-            IF (L3(i,j).GT.vpl(i)) THEN
-               Nb3(i,j) = .TRUE.
-!               D3(i,j) = LOG(EXP(L3(i,j)-vpl(i))-1)
-               CALL LogDiffExp(L3(i,j)-vpl(i),0.0d0,pl)
-               D3(i,j) = pl
-            ELSE
-               Nb3(i,j) = .FALSE.
-!               D3(i,j) = LOG(1-EXP(L3(i,j)-vpl(i)))
-               CALL LogDiffExp(0.0d0,L3(i,j)-vpl(i),pl)
-               D3(i,j) = pl
-            ENDIF
+            CALL L2D(D3(i,j),Nb3(i,j),L3(i,j),vpl(i))
          ENDIF
       ENDDO cycCalcColD3
    ENDDO cycCalcRowD3

@@ -102,15 +102,7 @@
    WRITE(*,*) "produce D and N matrices"
    cycDoRows: DO i=1,n
       cycDoCols: DO j=1,n
-         IF (Ls(i,j).GT.vpl(i)) THEN
-            Nbs(i,j) = .TRUE.
-            CALL LogDiffExp(Ls(i,j)-vpl(i),0.0d0,ltemp)
-            Ds(i,j) = ltemp
-         ELSE
-            Nbs(i,j) = .FALSE.
-            CALL LogDiffExp(0.0d0,Ls(i,j)-vpl(i),ltemp)
-            Ds(i,j) = ltemp
-         ENDIF
+         CALL L2D(Ds(i,j),Nbs(i,j),Ls(i,j),vpl(i))
       ENDDO cycDoCols
    ENDDO cycDoRows
 !

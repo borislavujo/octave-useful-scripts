@@ -19,6 +19,7 @@
    DOUBLE PRECISION :: minxl = -5.0d0
    DOUBLE PRECISION :: mindoldd = -3.0d0
    DOUBLE PRECISION :: ln2 = LOG(2.0d0)
+   DOUBLE PRECISION :: h = -3.0d0
 !
 ! -------------------------------------------------------------------
 !
