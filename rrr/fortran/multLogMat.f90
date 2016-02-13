@@ -127,6 +127,10 @@
    DO i=1,n
       WRITE(*,*) D3(i,:)
    ENDDO
+   WRITE(*,*) "N"
+   DO i=1,n
+      WRITE(*,*) Nb3(i,:)
+   ENDDO
 !
 !  symmetrise D3
 !
@@ -150,6 +154,10 @@
    WRITE(*,*) "before normalis"
    DO i=1,n
       WRITE(*,*) D3(i,:)
+   ENDDO
+   WRITE(*,*) "N"
+   DO i=1,n
+      WRITE(*,*) Nb3(i,:)
    ENDDO
    cycNormCols: DO j=1,n
       nplus = 0
@@ -217,6 +225,10 @@
    WRITE(*,*) "after normalis"
    DO i=1,n
       WRITE(*,*) D3(i,:)
+   ENDDO
+   WRITE(*,*) "N"
+   DO i=1,n
+      WRITE(*,*) Nb3(i,:)
    ENDDO
 !
    RETURN
