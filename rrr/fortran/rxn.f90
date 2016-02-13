@@ -137,7 +137,7 @@
 !  main cycle
 !
    WRITE(*,*) "Main cycle"
-   cycMain: DO WHILE( ((xl.GT.-minxl).OR.(doldd.GT.-mindoldd))&
+   cycMain: DO WHILE( ((xl.GT.minxl).OR.(doldd.GT.mindoldd))&
         .AND.(dmax.GT.thresh))
       Dold = D1
       CALL LPopul(n,L1,D1,Nb1,vpl,vba,xl)
