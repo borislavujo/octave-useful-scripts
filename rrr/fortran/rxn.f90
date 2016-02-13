@@ -120,12 +120,14 @@
    L1 = Ls
    D1 = Ds
    Nb1 = Nbs
-   cycDoubling: DO i=1,howFine
-      CALL MultLogMat(n,vpl,L1,D1,Nb1,L1,D1,Nb1,Ltem,Dtem,Nbtem)
-      L1 = Ltem
-      D1 = Dtem
-      Nb1 = Nbtem
-   ENDDO cycDoubling
+   IF (howFine.GT.0) THEN
+      cycDoubling: DO i=1,howFine
+         CALL MultLogMat(n,vpl,L1,D1,Nb1,L1,D1,Nb1,Ltem,Dtem,Nbtem)
+         L1 = Ltem
+         D1 = Dtem
+         Nb1 = Nbtem
+      ENDDO cycDoubling
+   ENDIF
    xl = 0
    nind = 1
    vXdata1(nind) = -99e9
@@ -149,6 +151,7 @@
       Dp = D1
       Nbp = Nb1
       ltnow = ldt
+      IF (nFine.GT.1) THEn
       cycLinProp: DO i=1,nFine-1
          CALL MultLogMat(n,vpl,Ls,Ds,Nbs,Lp,Dp,Nbp,Ltem,Dtem,Nbtem)
          Lp = Ltem
@@ -163,6 +166,7 @@
          WRITE(*,'(A10,I6,A10,E20.7,A10,E20.7)') "nind", nind, "ltnow", ltnow, "xl", xl
          nind = nind + 1
       ENDDO cycLinProp
+      ENDIF
       CALL MultLogMat(n,vpl,L1,D1,Nb1,L1,D1,Nb1,Ltem,Dtem,Nbtem)
       L1 = Ltem
       D1 = Dtem
