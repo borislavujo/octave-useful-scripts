@@ -141,7 +141,7 @@
 !
 !  normalise d3
 !
-   WRITE(*,*) "symmetris difference"
+   WRITE(*,*) "symmetris difference", MAXVAL(ABS(D3-Ddif))
    DO i=1,n
       WRITE(*,*) D3(i,:)-Ddif(i,:)
    ENDDO
@@ -217,7 +217,7 @@
          ENDDO
       ENDIF
    ENDDO cycNormCols
-   WRITE(*,*) "normalisation difference"
+   WRITE(*,*) "normalisation difference", MAXVAL(ABS(D3-Ddif))
    DO i=1,n
       WRITE(*,*) D3(i,:)-Ddif(i,:)
    ENDDO
