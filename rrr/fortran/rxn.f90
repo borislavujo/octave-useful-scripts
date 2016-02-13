@@ -175,6 +175,7 @@
       lds = lds + ln2
       doldd = LOG(SUM(ABS(D1-Dold)))
       dmax = MAXVAL(D1)
+      
    ENDDO cycMain
    CALL TrapzLog(nind-1,vXdata1,vXdata2,ltau)
    lkab = pl1 - ltau

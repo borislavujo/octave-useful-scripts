@@ -81,12 +81,17 @@
          L3(i,j) = L3(i,j) - ltemp
       ENDDO cycNormL3
    ENDDO cycL3norm
+   WRITE(*,*) "L3"
+   DO i=1,n
+      WRITE(*,*) L3(i,:)
+   ENDDO
 !
 !  calculate D3 AND Nb3
 !
    cycCalcRowD3: DO i=1,n
       cycCalcColD3: DO j=1,n
          IF (L3(i,j)-vpl(i).GT.h) THEN
+            Nbted(i,j) = .TRUE.
             cycFillvtr: DO k=1,n
                vtr((k-1)*3+1)  = vpl(k) + D1(i,k)
                vtr((k-1)*3+2)  = vpl(k)           + D2(k,j)
@@ -99,6 +104,7 @@
             Nb3(i,j) = btemp
             D3(i,j) = ltemp
          ELSE
+            Nbted(i,j) = .FALSE.
             IF (L3(i,j).GT.vpl(i)) THEN
                Nb3(i,j) = .TRUE.
 !               D3(i,j) = LOG(EXP(L3(i,j)-vpl(i))-1)
@@ -113,6 +119,14 @@
          ENDIF
       ENDDO cycCalcColD3
    ENDDO cycCalcRowD3
+   WRITE(*,*) "how produced"
+   DO i=1,n
+      WRITE(*,*) Nbted(i,:)
+   ENDDO
+   WRITE(*,*) "before symmetris"
+   DO i=1,n
+      WRITE(*,*) D3(i,:)
+   ENDDO
 !
 !  symmetrise D3
 !
@@ -133,6 +147,10 @@
 !
 !  normalise d3
 !
+   WRITE(*,*) "before normalis"
+   DO i=1,n
+      WRITE(*,*) D3(i,:)
+   ENDDO
    cycNormCols: DO j=1,n
       nplus = 0
       nminus = 0
@@ -148,6 +166,8 @@
             vminus(nminus) = vtr(i)
          ENDIF
       ENDDO cycGetTrms
+      WRITE(*,*) "nplus", nplus, "vplus", vplus(1:nplus)
+      WRITE(*,*) "nminus", nminus, "vminus", vminus(1:nminus)
       CALL LogSumDiff(n,vtr,vbtr,pl,bl)
       IF (nplus.GT.0) THEN
          CALL LogSumExp(nplus,vplus,pplus)
@@ -161,6 +181,8 @@
          pplus = -99e9
          WRITE(*,*) "warning: no positive terms"
       ENDIF
+      pl = ABS(pplus-pminus)
+      WRITE(*,*) "oprava", pl
       cycNormD3: DO i=1,n
          
 !      WRITE(*,*) "D3 col before norm", j, "sum row", pl, "smerom", bl
@@ -174,7 +196,7 @@
 !         D3(i,j) = ltemp
 !         vlnow(i) = ltemp
          IF (Nb3(i,j).EQV.bl) THEN
-            D3(i,j) = D3(i,j) - ABS(pplus-pminus)
+            D3(i,j) = D3(i,j) - pl
          ENDIF
       ENDDO cycNormD3
       cycCheckTrms: DO i=1,n
@@ -192,6 +214,10 @@
          ENDDO
       ENDIF
    ENDDO cycNormCols
+   WRITE(*,*) "after normalis"
+   DO i=1,n
+      WRITE(*,*) D3(i,:)
+   ENDDO
 !
    RETURN
 !
