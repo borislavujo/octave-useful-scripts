@@ -25,11 +25,11 @@
 ! -------------------------------------------------------------------
 !
    INTEGER :: i, j, k
-   DOUBLE PRECISION :: pl, ltemp, xl, doldd, dmax, pl1, pl2
+   DOUBLE PRECISION :: pl, ltemp, xl, dmax, pl1, pl2 ! doldd
    DOUBLE PRECISION :: lds, ldt, ltnow, ltau
    INTEGER :: nFine, na, nb
    DOUBLE PRECISION, DIMENSION(n,n) :: Kl, L1, D1, Ls, Ds, Lp, Dp, &
-        Dold, Ltem, Dtem
+        Ltem, Dtem    ! Dold
    LOGICAL, DIMENSION(n,n) :: Nb1, Nbs, Nbp, Nbtem
    DOUBLE PRECISION, DIMENSION(n) :: vlnow, vpla, vplb, vpl, vtemp
    DOUBLE PRECISION, DIMENSION(2) :: vUjo
@@ -126,7 +126,7 @@
    vXdata1(nind) = -99e9
    vXdata2(nind) = xl
    ldt = lds + REAL(howFine)*ln2
-   doldd = 1.0d1
+!   doldd = 1.0d1
    dmax = 1.0d1
 !
 !  main cycle
@@ -135,7 +135,7 @@
 !   cycMain: DO WHILE( ((xl.GT.minxl).OR.(doldd.GT.mindoldd))&
 !        .AND.(dmax.GT.thresh))
    cycMain: DO WHILE((xl.GT.minxl).OR.(dmax.GT.thresh))
-      Dold = D1
+!      Dold = D1
       CALL LPopul(n,L1,D1,Nb1,vpl,vba,xl)
       vXdata1(nind) = ldt
       vXdata2(nind) = xl
@@ -171,9 +171,10 @@
       Nbs = Nbtem
       ldt = ldt + ln2
       lds = lds + ln2
-      doldd = LOG(SUM(ABS(D1-Dold)))
+!      doldd = LOG(SUM(ABS(D1-Dold)))
       dmax = MAXVAL(D1)
-      WRITE(*,*) "xl", xl, "doldd", doldd, "dmax", dmax, "which", MAXLOC(D1)
+      WRITE(*,*) "xl", xl, "dmax", dmax, "which", MAXLOC(D1)
+!      WRITE(*,*) "xl", xl, "doldd", doldd, "dmax", dmax, "which", MAXLOC(D1)
    ENDDO cycMain
    CALL TrapzLog(nind-1,vXdata1,vXdata2,ltau)
    WRITE(*,*) "ltau", ltau
