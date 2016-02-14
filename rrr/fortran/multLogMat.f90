@@ -203,7 +203,7 @@
 ! here perhaps this excess population should be distributed to remainind D(i,i)
       ENDIF
    ENDDO cycNormCols
-   WRITE(*,*) "normalisation difference", MAXVAL(ABS(D3-Ddif))
+   WRITE(*,*) "normalisation difference", popdif, wcol
 !   DO i=1,n
 !      WRITE(*,fmt_f) D3(i,:)-Ddif(i,:)
 !   ENDDO
