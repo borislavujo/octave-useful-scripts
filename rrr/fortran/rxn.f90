@@ -177,12 +177,12 @@
       wrow = 0
       DO i=1,n-1
         DO j=i+1,n
-          IF (D1(i,j).GT.dmax
+          IF (D1(i,j).GT.dmax) THEN
             dmax = D1(i,j)
             wrow = i
             wcol = j
           ENDIF
-          IF (D1(j,i).GT.dmax
+          IF (D1(j,i).GT.dmax) THEN
             dmax = D1(j,i)
             wrow = j
             wcol = i
