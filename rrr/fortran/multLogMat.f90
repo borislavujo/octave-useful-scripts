@@ -173,7 +173,7 @@
       D3(j,j) = pl - vpl(j)
       IF ((D3(j,j).GT.0).AND.bl) THEN
          WRITE(*,*) "Warning: column ", j, " sums to x = 1 + exp", D(j,j)+vpl(j)
-         WRITE(*,*) "The problematic column", j, ":", D(1:n,j)
+         WRITE(*,*) "The problematic column", j, ":", D3(1:n,j)
          D3(j,j) = 0.0d0
 ! here perhaps this excess population should be distributed to remainind D(i,i)
       ENDIF
