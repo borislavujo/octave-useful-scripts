@@ -171,7 +171,7 @@
       lds = lds + ln2
       doldd = LOG(SUM(ABS(D1-Dold)))
       dmax = MAXVAL(D1)
-      WRITE(*,*) "xl", xl, "doldd", doldd, "dmax", dmax
+      WRITE(*,*) "xl", xl, "doldd", doldd, "dmax", dmax, "which", MAXLOC(D1)
    ENDDO cycMain
    CALL TrapzLog(nind-1,vXdata1,vXdata2,ltau)
    WRITE(*,*) "ltau", ltau
