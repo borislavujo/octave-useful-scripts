@@ -24,7 +24,7 @@
 !
 ! -------------------------------------------------------------------
 !
-   INTEGER :: i, j, k
+   INTEGER :: i, j, k, wcol, wrow
    DOUBLE PRECISION :: pl, ltemp, xl, dmax, pl1, pl2 ! doldd
    DOUBLE PRECISION :: lds, ldt, ltnow, ltau
    INTEGER :: nFine, na, nb
@@ -172,8 +172,24 @@
       ldt = ldt + ln2
       lds = lds + ln2
 !      doldd = LOG(SUM(ABS(D1-Dold)))
-      dmax = MAXVAL(D1)
-      WRITE(*,*) "xl", xl, "dmax", dmax, "which", MAXLOC(D1)
+      dmax = -99e9
+      wcol = 0
+      wrow = 0
+      DO i=1,n-1
+        DO j=i+1,n
+          IF (D1(i,j).GT.dmax
+            dmax = D1(i,j)
+            wrow = i
+            wcol = j
+          ENDIF
+          IF (D1(j,i).GT.dmax
+            dmax = D1(j,i)
+            wrow = j
+            wcol = i
+          ENDIF
+        ENDDO
+      ENDDO
+      WRITE(*,*) "xl", xl, "dmax", dmax, "which", wrow, wcol
 !      WRITE(*,*) "xl", xl, "doldd", doldd, "dmax", dmax, "which", MAXLOC(D1)
    ENDDO cycMain
    CALL TrapzLog(nind-1,vXdata1,vXdata2,ltau)
