@@ -103,9 +103,14 @@
             CALL LogSumDiff(3*n,vtr,vbtr,ltemp,btemp)
             Nb3(i,j) = btemp
             D3(i,j) = ltemp
+            IF ((.NOT.Nb3(i,j)).AND.(D3(i,j).GT.0)) THEN
+               WRITE(*,*) "warning: negative popul was calculated for i, j", i, &
+                    j, "D(i,j):", D3(i,j), "D(i,j)+vpl(i)", D3(i,j)+vpl(i)
+               D3(i,j) = 0.0d0
 !            WRITE(*,*) "i, j", i, j, "Nb3(i,j)", Nb3(i,j), "D3(i,j)", D3(i,j)
 !            WRITE(*,*) "vtr", vtr
 !            WRITE(*,*) "vbtr", vbtr
+            ENDIF
          ELSE
             Nbted(i,j) = .FALSE.
             CALL L2D(D3(i,j),Nb3(i,j),L3(i,j),vpl(i))
@@ -173,7 +178,7 @@
       D3(j,j) = pl - vpl(j)
       IF ((D3(j,j).GT.0).AND.bl) THEN
          WRITE(*,*) "Warning: column ", j, " sums to x = 1 + exp", D3(j,j)+vpl(j)
-         WRITE(*,*) "The problematic column", j, ":", D3(1:n,j)
+!         WRITE(*,*) "The problematic column", j, ":", D3(1:n,j)
          D3(j,j) = 0.0d0
 ! here perhaps this excess population should be distributed to remainind D(i,i)
       ENDIF

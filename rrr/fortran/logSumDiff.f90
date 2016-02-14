@@ -72,7 +72,7 @@
 !
 ! if the result is zero, do the same in the reverse direction of sum
 !
-   WRITE(*,*) "otacam poradie"
+!   WRITE(*,*) "otacam poradie"
    lSD = vL(vI(n))
    bPM = vbPM(vI(n))
    cycAddRev: DO i=1,n-1
