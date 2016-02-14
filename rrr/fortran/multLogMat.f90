@@ -27,10 +27,9 @@
 ! -------------------------------------------------------------------
 !
    INTEGER :: i, j, k
-   DOUBLE PRECISION :: pl, ltemp, pl2, pplus, pminus
-   INTEGER :: nind, nplus, nminus
+   DOUBLE PRECISION :: pl, ltemp, pl2, pplus, pminus, popdif, tempdif
+   INTEGER :: nind, nplus, nminus, wrow, wcol
    DOUBLE PRECISION, DIMENSION(n) :: vlnow, vplus, vminus
-   DOUBLE PRECISION, DIMENSION(n,n) :: Ddif
    DOUBLE PRECISION, DIMENSION(2) :: vUjo
    DOUBLE PRECISION, DIMENSION(3*n) :: vtr
    LOGICAL :: btemp, bl
@@ -132,7 +131,9 @@
 !
 !  symmetrise D3
 !
-   Ddif = D3
+   popdif = -99e9
+   wrow = 0
+   wcol = 0
    cycSymmD3Row: DO i=1,n
       cycSymmD3Col: DO j=1,n
          IF (D3(i,j).GT.D3(j,i)) THEN
@@ -140,14 +141,30 @@
          ELSE
             Nb3(i,j) = Nb3(j,i)
          ENDIF
-         vUjo(1) = D3(i,j)
-         vUjo(2) = D3(j,i)
+         vUjo(1) = D3(i,j)+vpl(i)
+         vUjo(2) = D3(j,i)+vpl(j)
+         CALL LogSumExp(2,vUjo,ltemp)
+         vUjo(1) = vpl(i)
+         vUjo(2) = vpl(j)
          CALL LogSumExp(2,vUjo,pl)
-         D3(i,j) = pl - ln2
-         D3(j,i) = D3(i,j)
+         ltemp = ltemp - pl
+         CALL LogDiffExp(MAX(ltemp,D3(i,j)),MIN(ltemp,D3(i,j)),tempdif)
+         IF(vpl(i)+tempdif.GT.popdif) THEN
+           popdif = vpl(i) + tempdif
+           wrow = i
+           wcol = j
+         ENDIF
+         CALL LogDiffExp(MAX(ltemp,D3(j,i)),MIN(ltemp,D3(j,i)),tempdif)
+         IF(vpl(j)+tempdif.GT.popdif) THEN
+           popdif = vpl(j) + tempdif
+           wrow = j
+           wcol = i
+         ENDIF
+         D3(i,j) = ltemp
+         D3(j,i) = ltemp
       ENDDO cycSymmD3Col
    ENDDO cycSymmD3Row
-   WRITE(*,*) "symmetris difference", MAXVAL(ABS(D3-Ddif))
+   WRITE(*,*) "symmetris difference", popdif, wrow, wcol
 !   DO i=1,n
 !      WRITE(*,fmt_f) D3(i,:)-Ddif(i,:)
 !   ENDDO
@@ -162,7 +179,8 @@
 !
 !  normalise d3
 !
-   Ddif = D3
+   popdif = 0
+   wcol = 0
    cycNormCols: DO j=1,n
       cycGetTrms: DO i=1,n
          vtr(i)  = D3(i,j)+vpl(i)
@@ -171,10 +189,12 @@
       vtr(j) = vtr(n)
       vbtr(j) = vbtr(n)
       CALL LogSumDiff(n-1,vtr,vbtr,pl,bl)
-!      WRITE(*,*) "vtr", vtr(1:n-1)
-!      WRITE(*,*) "vbtr", vbtr(1:n-1)
-!      WRITE(*,*) "pl", pl, "bl", bl
       Nb3(j,j) = .NOT.bl
+      CALL LogDiffExp(MAX(D3(j,j)+vpl(i),pl),MIN(D3(j,j)+vpl(j),pl),tempdif)
+      IF (tempdif.GT.popdif) THEN
+        wcol = j
+        popdif = tempdif
+      ENDIF
       D3(j,j) = pl - vpl(j)
       IF ((D3(j,j).GT.0).AND.bl) THEN
          WRITE(*,*) "Warning: column ", j, " sums to x = 1 + exp", D3(j,j)+vpl(j)
