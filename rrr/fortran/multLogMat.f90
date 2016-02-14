@@ -1,4 +1,3 @@
-
 !
 !
  SUBROUTINE MultLogMat(n,vpl,L1,D1,Nb1,L2,D2,Nb2,L3,D3,Nb3)
@@ -173,8 +172,10 @@
       Nb3(j,j) = .NOT.bl
       D3(j,j) = pl - vpl(j)
       IF ((D3(j,j).GT.0).AND.bl) THEN
-         WRITE(*,*) "Error: column ", j, " sums to x> 1"
-         STOP
+         WRITE(*,*) "Warning: column ", j, " sums to x = 1 + exp", D(j,j)+vpl(j)
+         WRITE(*,*) "The problematic column", j, ":", D(1:n,j)
+         D3(j,j) = 0.0d0
+! here perhaps this excess population should be distributed to remainind D(i,i)
       ENDIF
    ENDDO cycNormCols
    WRITE(*,*) "normalisation difference", MAXVAL(ABS(D3-Ddif))
