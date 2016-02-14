@@ -72,6 +72,7 @@
 !
 ! if the result is zero, do the same in the reverse direction of sum
 !
+   WRITE(*,*) "otacam poradie"
    lSD = vL(vI(n))
    bPM = vbPM(vI(n))
    cycAddRev: DO i=1,n-1
@@ -211,14 +212,15 @@
       DO WHILE(ldd.GT.-30)
          i = i + 1
          faci = faci * i
-         ldd = REAL(i)*lll-REAL(faci)
+         ldd = REAL(i)*lll-REAL(faci) ! next term
          IF (MODULO(i,2).EQ.0) THEN
-            ldif = ldif + LOG(1-EXP(ldd-ldif))
+            ldif = ldif + LOG(1-EXP(ldd-ldif)) ! add term
          ELSE
             ldif = ldif + LOG(1+EXP(ldd-ldif))
          ENDIF
       ENDDO
-      ldif = ldif - ll1
+      ldif = ll1 + ldif
+!      WRITE(*,*) "very similar vals", ll1, ll2, ldif
    ENDIF
 !
    RETURN

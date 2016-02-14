@@ -67,7 +67,7 @@
       ENDIF
    ENDDO cycCountA
    CALL LogSumExp(na,vpla,pl1)
-   CALL LogSumExp(na,vplb,pl2) ! more robust than CALL LogDiffExp(0.0d0,pl1,pl2)
+   CALL LogSumExp(nb,vplb,pl2) ! more robust than CALL LogDiffExp(0.0d0,pl1,pl2)
 !
 !  calculate optimal minimum (log) time step lds
 !
@@ -174,6 +174,8 @@
       WRITE(*,*) "xl", xl, "doldd", doldd, "dmax", dmax
    ENDDO cycMain
    CALL TrapzLog(nind-1,vXdata1,vXdata2,ltau)
+   WRITE(*,*) "ltau", ltau
+   WRITE(*,*) "pl1", pl1, "pl2", pl2, "p1", EXP(pl1), "p2", EXP(pl2)
    lkab = pl1 - ltau
    lkba = pl2 - ltau
    WRITE(*,*) "lkab", lkab, "lkba", lkba

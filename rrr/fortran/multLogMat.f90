@@ -38,9 +38,11 @@
    LOGICAL, DIMENSION(3*n) :: vbtr
    LOGICAL, DIMENSION(2) :: vbUjo
    LOGICAL, DIMENSION(n,n) :: Nbted
+   CHARACTER(LEN=32) :: fmt_f
 !
 ! -------------------------------------------------------------------
 !
+   fmt_f = '(16E14.5)'
 !
 !  L3 = L1 * L2
 !
@@ -80,10 +82,10 @@
          L3(i,j) = L3(i,j) - ltemp
       ENDDO cycNormL3
    ENDDO cycL3norm
-   WRITE(*,*) "L3"
-   DO i=1,n
-      WRITE(*,*) L3(i,:)
-   ENDDO
+!   WRITE(*,*) "L3"
+!   DO i=1,n
+!      WRITE(*,fmt_f) L3(i,:)
+!   ENDDO
 !
 !  calculate D3 AND Nb3
 !
@@ -102,103 +104,27 @@
             CALL LogSumDiff(3*n,vtr,vbtr,ltemp,btemp)
             Nb3(i,j) = btemp
             D3(i,j) = ltemp
+!            WRITE(*,*) "i, j", i, j, "Nb3(i,j)", Nb3(i,j), "D3(i,j)", D3(i,j)
+!            WRITE(*,*) "vtr", vtr
+!            WRITE(*,*) "vbtr", vbtr
          ELSE
             Nbted(i,j) = .FALSE.
             CALL L2D(D3(i,j),Nb3(i,j),L3(i,j),vpl(i))
          ENDIF
       ENDDO cycCalcColD3
    ENDDO cycCalcRowD3
-   WRITE(*,*) "how produced"
-   DO i=1,n
-      WRITE(*,*) Nbted(i,:)
-   ENDDO
-   WRITE(*,*) "before normalis"
-   DO i=1,n
-      WRITE(*,*) D3(i,:)
-   ENDDO
-   WRITE(*,*) "N"
-   DO i=1,n
-      WRITE(*,*) Nb3(i,:)
-   ENDDO
-!
-!  normalise d3
-!
-   Ddif = D3
-   cycNormCols: DO j=1,n
-      nplus = 0
-      nminus = 0
-      cycGetTrms: DO i=1,n
-         vtr(i)  = D3(i,j)+vpl(i)
-!         vtr(i)  = D3(i,j) ... this was the mistake
-         vbtr(i) = Nb3(i,j)
-         IF (Nb3(i,j)) THEN
-            nplus = nplus+1
-            vplus(nplus) = vtr(i)
-         ELSE
-            nminus = nminus+1
-            vminus(nminus) = vtr(i)
-         ENDIF
-      ENDDO cycGetTrms
-      WRITE(*,*) "nplus", nplus, "vplus", vplus(1:nplus)
-      WRITE(*,*) "nminus", nminus, "vminus", vminus(1:nminus)
-      CALL LogSumDiff(n,vtr,vbtr,pl,bl)
-      IF (nplus.GT.0) THEN
-         CALL LogSumExp(nplus,vplus,pplus)
-      ELSE
-         pplus = -99e9
-         WRITE(*,*) "warning: no positive terms"
-      ENDIF
-      IF (nminus.GT.0) THEN
-         CALL LogSumExp(nminus,vminus,pminus)
-      ELSE
-         pplus = -99e9
-         WRITE(*,*) "warning: no positive terms"
-      ENDIF
-      pl = ABS(pplus-pminus)
-      WRITE(*,*) "oprava", pl
-      cycNormD3: DO i=1,n
-         
-!      WRITE(*,*) "D3 col before norm", j, "sum row", pl, "smerom", bl
-!      cycDoTrms: DO i=1,n
-!         vUjo(1) = MIN(pl-1.0e-2,D3(i,j)-1.0e-2)
-!         vUjo(1) = MIN(pl+vpl(i),D3(i,j)-1e-5)
-!         vUjo(2) = D3(i,j)
-!         vbUjo(1) = .NOT.bl
-!         vbUjo(2) = Nb3(i,j)
-!         CALL LogSumDiff(2,vujo,vbujo,ltemp,btemp)
-!         D3(i,j) = ltemp
-!         vlnow(i) = ltemp
-         IF (Nb3(i,j).EQV.bl) THEN
-            D3(i,j) = D3(i,j) - pl
-         ENDIF
-      ENDDO cycNormD3
-      cycCheckTrms: DO i=1,n
-         vtr(i)  = vlnow(i)+vpl(i)
-         vbtr(i) = Nb3(i,j)
-      ENDDO cycCheckTrms
-      CALL LogSumDiff(n,vtr,vbtr,pl2,bl)
-!
-!  i have no idea how this normalisation can make things worse
-!    correct D3 only if normalisation improves it
-!
-      IF (ABS(pl).GT.ABS(pl2)) THEN
-         DO i=1,n
-            D3(i,j) = vlnow(i)
-         ENDDO
-      ENDIF
-   ENDDO cycNormCols
-   WRITE(*,*) "normalisation difference", MAXVAL(ABS(D3-Ddif))
-   DO i=1,n
-      WRITE(*,*) D3(i,:)-Ddif(i,:)
-   ENDDO
-   WRITE(*,*) "after normalis"
-   DO i=1,n
-      WRITE(*,*) D3(i,:)
-   ENDDO
-   WRITE(*,*) "N"
-   DO i=1,n
-      WRITE(*,*) Nb3(i,:)
-   ENDDO
+!   WRITE(*,*) "how produced"
+!   DO i=1,n
+!      WRITE(*,*) Nbted(i,:)
+!   ENDDO
+!   WRITE(*,*) "before symmetris"
+!   DO i=1,n
+!      WRITE(*,fmt_f) D3(i,:)
+!   ENDDO
+!   WRITE(*,*) "N"
+!   DO i=1,n
+!      WRITE(*,*) Nb3(i,:)
+!   ENDDO
 !
 !  symmetrise D3
 !
@@ -218,17 +144,55 @@
       ENDDO cycSymmD3Col
    ENDDO cycSymmD3Row
    WRITE(*,*) "symmetris difference", MAXVAL(ABS(D3-Ddif))
-   DO i=1,n
-      WRITE(*,*) D3(i,:)-Ddif(i,:)
-   ENDDO
-   WRITE(*,*) "after symmetris"
-   DO i=1,n
-      WRITE(*,*) D3(i,:)
-   ENDDO
-   WRITE(*,*) "N"
-   DO i=1,n
-      WRITE(*,*) Nb3(i,:)
-   ENDDO
+!   DO i=1,n
+!      WRITE(*,fmt_f) D3(i,:)-Ddif(i,:)
+!   ENDDO
+!   WRITE(*,*) "after symmetris"
+!   DO i=1,n
+!      WRITE(*,fmt_f) D3(i,:)
+!   ENDDO
+!   WRITE(*,*) "N"
+!   DO i=1,n
+!      WRITE(*,*) Nb3(i,:)
+!   ENDDO
+!
+!  normalise d3
+!
+   Ddif = D3
+   cycNormCols: DO j=1,n
+      cycGetTrms: DO i=1,n
+         vtr(i)  = D3(i,j)+vpl(i)
+         vbtr(i) = Nb3(i,j)
+      ENDDO cycGetTrms
+      vtr(j) = vtr(n)
+      vbtr(j) = vbtr(n)
+      CALL LogSumDiff(n-1,vtr,vbtr,pl,bl)
+!      WRITE(*,*) "vtr", vtr(1:n-1)
+!      WRITE(*,*) "vbtr", vbtr(1:n-1)
+!      WRITE(*,*) "pl", pl, "bl", bl
+      Nb3(j,j) = .NOT.bl
+      D3(j,j) = pl - vpl(j)
+      IF ((D3(j,j).GT.0).AND.bl) THEN
+         WRITE(*,*) "Error: column ", j, " sums to x> 1"
+         STOP
+      ENDIF
+   ENDDO cycNormCols
+   WRITE(*,*) "normalisation difference", MAXVAL(ABS(D3-Ddif))
+!   DO i=1,n
+!      WRITE(*,fmt_f) D3(i,:)-Ddif(i,:)
+!   ENDDO
+!   WRITE(*,*) "after normalis"
+!   DO i=1,n
+!      WRITE(*,fmt_f) D3(i,:)
+!   ENDDO
+!   WRITE(*,*) "N"
+!   DO i=1,n
+!      WRITE(*,*) Nb3(i,:)
+!   ENDDO
+!   WRITE(*,*) "final D*P"
+!   DO i=1,n
+!      WRITE(*,fmt_f) D3(i,:)+vpl
+!   ENDDO
 !
    RETURN
 !
