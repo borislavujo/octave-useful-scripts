@@ -134,8 +134,8 @@
    popdif = -99e9
    wrow = 0
    wcol = 0
-   cycSymmD3Row: DO i=1,n
-      cycSymmD3Col: DO j=1,n
+   cycSymmD3Row: DO i=1,n-1
+      cycSymmD3Col: DO j=i+1,n
          IF (D3(i,j).GT.D3(j,i)) THEN
             Nb3(j,i) = Nb3(i,j)
          ELSE
@@ -179,7 +179,7 @@
 !
 !  normalise d3
 !
-   popdif = 0
+   popdif = -99e9
    wcol = 0
    cycNormCols: DO j=1,n
       cycGetTrms: DO i=1,n
@@ -190,7 +190,7 @@
       vbtr(j) = vbtr(n)
       CALL LogSumDiff(n-1,vtr,vbtr,pl,bl)
       Nb3(j,j) = .NOT.bl
-      CALL LogDiffExp(MAX(D3(j,j)+vpl(i),pl),MIN(D3(j,j)+vpl(j),pl),tempdif)
+      CALL LogDiffExp(MAX(D3(j,j)+vpl(j),pl),MIN(D3(j,j)+vpl(j),pl),tempdif)
       IF (tempdif.GT.popdif) THEN
         wcol = j
         popdif = tempdif
