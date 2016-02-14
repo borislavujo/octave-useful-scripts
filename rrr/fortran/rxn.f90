@@ -13,7 +13,8 @@
 ! *                                                                    *
 ! **********************************************************************
 !
-   USE ParamsRXN, ONLY: howFine, lstartdt, thresh, ln2, minxl, mindoldd
+   USE ParamsRXN, ONLY: howFine, lstartdt, thresh, ln2, minxl
+!, mindoldd
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: n
    DOUBLE PRECISION, INTENT(IN), DIMENSION(n) :: vpl0
@@ -131,8 +132,9 @@
 !  main cycle
 !
    WRITE(*,*) "Main cycle"
-   cycMain: DO WHILE( ((xl.GT.minxl).OR.(doldd.GT.mindoldd))&
-        .AND.(dmax.GT.thresh))
+!   cycMain: DO WHILE( ((xl.GT.minxl).OR.(doldd.GT.mindoldd))&
+!        .AND.(dmax.GT.thresh))
+   cycMain: DO WHILE((xl.GT.minxl).OR.(dmax.GT.thresh))
       Dold = D1
       CALL LPopul(n,L1,D1,Nb1,vpl,vba,xl)
       vXdata1(nind) = ldt
