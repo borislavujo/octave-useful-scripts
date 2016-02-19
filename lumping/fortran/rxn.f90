@@ -189,7 +189,7 @@
           ENDIF
         ENDDO
       ENDDO
-      WRITE(*,*) "xl", xl, "dmax", dmax, "which", wrow, wcol
+      WRITE(*,*) "xl", xl, "dmax", dmax, "Nb",  Nb1(wrow,wcol),"which", wrow, wcol
 !      WRITE(*,*) "xl", xl, "doldd", doldd, "dmax", dmax, "which", MAXLOC(D1)
    ENDDO cycMain
    CALL TrapzLog(nind-1,vXdata1,vXdata2,ltau)
