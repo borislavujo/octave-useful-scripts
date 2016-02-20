@@ -1,4 +1,4 @@
-function Kl = ngt2rm(Nxy,Pxy,vpxx,vtaux,vn)
+function Kl = ngt2rm(Nxy,Pxy,vpxx,vnpxx,vtaux,vn)
 % transforms a log rate matrix into structures required by a 
 % Nxy - indices of neighbours
 % Pxy - log probabilities to neighbours
