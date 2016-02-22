@@ -30,7 +30,7 @@ if (nnow>0)
 	if (vpxx(ix)<-0.5)
 	  vnpxx(ib) = subFrom1(vpxx(ib));
 	else
-	  vnpxx(ib) = logDiffExp([vnpxx(ib);Pxy(jbx,ix)+Pxy(jxb,ib)-vnpxx(ix)]); % (8) in Wales2009, for b=g
+	  vnpxx(ib) = logDiffExp(vnpxx(ib),Pxy(jbx,ix)+Pxy(jxb,ib)-vnpxx(ix)); % (8) in Wales2009, for b=g
 	  vpxx(ib) = subFrom1(vnpxx(ib));
 	endif
       elseif ismember(ib,Nxy(1:vn(ig),ig))
